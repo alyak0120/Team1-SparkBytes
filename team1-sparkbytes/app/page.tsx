@@ -20,9 +20,12 @@ const mockEvents = [
     distance: 2,
     description: "Join us for free pizza slices and good vibes!",
     location: "Student Union",
+    campus: "Central Campus",
     time: "5:00 PM - 7:00 PM",
     servingsLeft: 10,
     image: "/images/pizza.jpg",
+    dietary: ["Vegetarian"],
+    allergies: ["Contains Dairy", "Contains Gluten"],
   },
   {
     id: 2,
@@ -31,9 +34,12 @@ const mockEvents = [
     distance: 5,
     description: "Spicy tacos and fun games!",
     location: "Cafeteria Patio",
+    campus: "East Campus",
     time: "6:00 PM - 8:00 PM",
     servingsLeft: 6,
     image: "/images/tacos.jpg",
+    dietary: ["Halal"],
+    allergies: ["Contains Gluten"],
   },
   {
     id: 3,
@@ -42,9 +48,12 @@ const mockEvents = [
     distance: 1,
     description: "Fresh sushi rolls made on site!",
     location: "Library Courtyard",
+    campus: "West Campus",
     time: "12:00 PM - 2:00 PM",
     servingsLeft: 12,
     image: "/images/sushi.jpg",
+    dietary: ["Pescatarian"],
+    allergies: ["Contains Soy"],
   },
   {
     id: 4,
@@ -53,28 +62,45 @@ const mockEvents = [
     distance: 4,
     description: "Cream cheese, coffee, and bagels!",
     location: "Campus Café",
+    campus: "Fenway Campus",
     time: "10:00 AM - 12:00 PM",
     servingsLeft: 8,
     image: "/images/muffins.jpg",
+    dietary: ["Vegetarian"],
+    allergies: ["Contains Dairy", "Contains Gluten"],
   },
 ];
 
 
+
 const categories = ["All", "Pizza", "Mexican", "Asian", "Breakfast", "Other"]; //does this make sense
 const sortOptions = [
-  {value: "distance", label: "Distance"},
   {value: "time", label: "Time Posted"},
+  {value: "servings", label: "Servings Left"},
 ];
+const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Halal", "Kosher", "Pescatarian"];
+const allergyOptions = ["Peanut-Free", "Dairy-Free", "Soy-Free", "Gluten-Free"];
+const locationOptions = ["East Campus", "West Campus", "South Campus", "Central Campus", "Fenway Campus"];
 
 export default function Home() {
   const [filter, setFilter] = useState("All");
   const [favorites, setFavorites] = useState<number[]>([]);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
-  const [sort, setSort] = useState<"distance" | "time">("distance");
+  const [sort, setSort] = useState<"time" | "servings">("time");
   const [reserves, setReserves] = useState<number[]>([]);
+  const [dietary, setDietary] = useState<string[]>([]);
+  const [allergy, setAllergy] = useState<string[]>([]);
+  const [location, setLocation] = useState<string[]>([]);
 
-  const filteredEvents = mockEvents.filter((e) => filter === "All" || e.category === filter).sort((a,b) =>
-  sort === "distance" ? a.distance - b.distance : a.time.localeCompare(b.time));
+
+const filteredEvents = mockEvents.filter((e) => filter === "All" || e.category === filter).filter((e) => dietary.length === 0 ||
+dietary.some(dopts => e.dietary.includes(dopts))).filter((e) => allergy.length === 0 ||
+allergy.every(aopts => !e.allergies.includes(aopts))).filter((e) => location.length === 0 ||
+location.includes(e.campus)).sort((a,b) => {
+  if (sort==="time") return a.id - b.id;
+  if (sort === "servings") return b.servingsLeft-a.servingsLeft;
+  return 0;
+});
   
   const favs = (id:number) => {
     setFavorites((prev) => prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]);
@@ -132,10 +158,47 @@ export default function Home() {
               </Tag>
           ))}
 
-        <Select value={sort} onChange={(value: "distance" | "time") => setSort(value)} options={sortOptions} style={{width:160}}/>
+        <Select value={sort} onChange={(value: "time" | "servings") => setSort(value)} options={sortOptions} style={{width:160}}/>
     </Space>
     </Row>
 
+    <Row gutter={[16,16]} style={{marginTop: 16}}>
+      <Col xs={24} sm={8}>
+          <Select
+            mode="multiple"
+            allowClear
+            placeholder="Filter by dietary preference"
+            value={dietary}
+            onChange={setDietary}
+            options={dietaryOptions.map((dopts) => ({label: dopts, value: dopts}))}
+            style={{width: "100%"}}
+          />
+      </Col>
+
+      <Col xs={24} sm={8}>
+        <Select
+            mode="multiple"
+            allowClear
+            placeholder="Filter by allergies"
+            value={allergy}
+            onChange={setAllergy}
+            options={allergyOptions.map((aopts) => ({label: aopts, value: aopts}))}
+            style={{width: "100%"}}
+          />
+      </Col>
+
+      <Col xs={24} sm={8}>
+        <Select
+            mode="multiple"
+            allowClear
+            placeholder="Filter by location"
+            value={location}
+            onChange={setLocation}
+            options={locationOptions.map((lopts) => ({label: lopts, value: lopts}))}
+            style={{width: "100%"}}
+          />
+      </Col>
+    </Row>
     <div style={{marginTop:12}}>
           {layout === "list" ? (
             <Row gutter={[24,24]} justify="start">
