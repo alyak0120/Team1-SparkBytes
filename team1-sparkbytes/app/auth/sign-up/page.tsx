@@ -1,11 +1,17 @@
-import { SignUpForm } from "@/components/sign-up-form";
+"use client";
+
+import { useRouter } from "next/navigation";
+import SignUpForm from "@/components/sign-up-form";
 
 export default function Page() {
+  const router = useRouter();
+
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <SignUpForm />
-      </div>
+    <div className="flex min-h-svh w-full items-center justify-center">
+      <SignUpForm
+        onSignUp={() => router.push("/auth/login")}
+        onNavigate={(path) => router.push(`/auth/${path}`)}
+      />
     </div>
   );
 }
