@@ -1,5 +1,6 @@
 'use client';
-
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {useState} from 'react';
 import {Card, Button, Tag, Select, Row, Col, Typography, Space, Tooltip, Empty, ConfigProvider, theme} from 'antd';
 import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, HeartFilled, FlagOutlined, UnorderedListOutlined} from '@ant-design/icons';
@@ -79,6 +80,13 @@ const allergyOptions = ["Peanut-Free", "Dairy-Free", "Soy-Free", "Gluten-Free"];
 const locationOptions = ["East Campus", "West Campus", "South Campus", "Central Campus", "Fenway Campus"];
 
 export default function Home() {
+    const router = useRouter();
+
+  useEffect(() => {
+    if (localStorage.getItem("loggedIn") !== "true") {
+      router.push("/auth/login");
+    }
+  }, []);
   const [filter, setFilter] = useState("All");
   const [favorites, setFavorites] = useState<number[]>([]);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
