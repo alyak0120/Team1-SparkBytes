@@ -17,7 +17,6 @@ const mockEvents = [
     id: 1,
     title: "Pizza Night",
     category: "Pizza",
-    distance: 2,
     description: "Join us for free pizza slices and good vibes!",
     location: "Student Union",
     campus: "Central Campus",
@@ -31,7 +30,6 @@ const mockEvents = [
     id: 2,
     title: "Taco Tuesday",
     category: "Mexican",
-    distance: 5,
     description: "Spicy tacos and fun games!",
     location: "Cafeteria Patio",
     campus: "East Campus",
@@ -45,7 +43,6 @@ const mockEvents = [
     id: 3,
     title: "Sushi Social",
     category: "Asian",
-    distance: 1,
     description: "Fresh sushi rolls made on site!",
     location: "Library Courtyard",
     campus: "West Campus",
@@ -59,7 +56,6 @@ const mockEvents = [
     id: 4,
     title: "Bagel Brunch",
     category: "Breakfast",
-    distance: 4,
     description: "Cream cheese, coffee, and bagels!",
     location: "Campus Café",
     campus: "Fenway Campus",
@@ -228,7 +224,6 @@ location.includes(e.campus)).sort((a,b) => {
                     >
                   
                     <Typography.Title level={5} style={{marginBottom:4}}>{event.title}</Typography.Title>
-                    <Typography.Text type="secondary" style={{display: 'block', marginBottom: 8}}>{event.distance} mi away</Typography.Text>
                     <p>{event.description}</p>
                     <Space direction="vertical" size={2}>
                       <Typography.Text>
