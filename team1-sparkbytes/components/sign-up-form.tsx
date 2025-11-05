@@ -1,119 +1,195 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState } from 'react';
+import { Card, Input, Button, Checkbox, message } from 'antd';
+import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Sparkles } from 'lucide-react';
 
-export function SignUpForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+interface SignUpProps {
+  onSignUp: () => void;
+  onNavigate?: (path: string) => void;
+}
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const supabase = createClient();
-    setIsLoading(true);
-    setError(null);
+export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreement: false,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
-    if (password !== repeatPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
+  const handleNavigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name) {
+      newErrors.name = 'Please input your name!';
     }
 
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
-        },
-      });
-      if (error) throw error;
-      router.push("/auth/sign-up-success");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
+    if (!formData.email) {
+      newErrors.email = 'Please input your email!';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email!';
+    } else if (!formData.email.endsWith('@bu.edu')) {
+      newErrors.email = 'Enter a valid BU email address (@bu.edu)';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Please input your password!';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters!';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password!';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match!';
+    }
+
+    if (!formData.agreement) {
+      newErrors.agreement = 'Please accept the terms';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (validateForm()) {
+      setLoading(true);
+      setTimeout(() => {
+        message.success('Account created successfully!');
+        setLoading(false);
+        onSignUp();
+      }, 500);
     }
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Sign up</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repeat Password</Label>
-                </div>
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
-                />
-              </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating an account..." : "Sign up"}
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Login
-              </Link>
-            </div>
-          </form>
-        </CardContent>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-lg" style={{ padding: '2rem' }}>
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center">
+            <Sparkles className="w-10 h-10 text-white" />
+          </div>
+        </div>
+        
+        <h1 className="text-center text-red-600 mb-2">Join SparkBytes!</h1>
+        <p className="text-center text-gray-600 mb-8">
+          Help reduce food waste at BU
+        </p>
+
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm mb-1.5">Full Name</label>
+            <Input
+              size="large"
+              prefix={<UserOutlined className="text-gray-400" />}
+              placeholder="Your Name"
+              value={formData.name}
+              status={errors.name ? 'error' : ''}
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value });
+                setErrors({ ...errors, name: '' });
+              }}
+            />
+            {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1.5">BU Email</label>
+            <Input
+              size="large"
+              prefix={<MailOutlined className="text-gray-400" />}
+              placeholder="example@bu.edu"
+              value={formData.email}
+              status={errors.email ? 'error' : ''}
+              onChange={(e) => {
+                setFormData({ ...formData, email: e.target.value });
+                setErrors({ ...errors, email: '' });
+              }}
+            />
+            {errors.email && <div className="text-red-500 text-sm mt-1">{errors.email}</div>}
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1.5">Password</label>
+            <Input.Password
+              size="large"
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="••••••••"
+              value={formData.password}
+              status={errors.password ? 'error' : ''}
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                setErrors({ ...errors, password: '' });
+              }}
+            />
+            {errors.password && <div className="text-red-500 text-sm mt-1">{errors.password}</div>}
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1.5">Confirm Password</label>
+            <Input.Password
+              size="large"
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              status={errors.confirmPassword ? 'error' : ''}
+              onChange={(e) => {
+                setFormData({ ...formData, confirmPassword: e.target.value });
+                setErrors({ ...errors, confirmPassword: '' });
+              }}
+            />
+            {errors.confirmPassword && <div className="text-red-500 text-sm mt-1">{errors.confirmPassword}</div>}
+          </div>
+
+          <div>
+            <Checkbox
+              checked={formData.agreement}
+              onChange={(e) => {
+                setFormData({ ...formData, agreement: e.target.checked });
+                setErrors({ ...errors, agreement: '' });
+              }}
+            >
+              <span className={errors.agreement ? 'text-red-500' : ''}>
+                I understand that SparkBytes is available for BU students only
+              </span>
+            </Checkbox>
+            {errors.agreement && <div className="text-red-500 text-sm mt-1">{errors.agreement}</div>}
+          </div>
+
+          <Button
+            type="primary"
+            size="large"
+            block
+            loading={loading}
+            onClick={handleSubmit}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Create Account
+          </Button>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{' '}
+            <a 
+              onClick={() => handleNavigate('login')}
+              className="text-red-600 hover:text-red-700 cursor-pointer"
+            >
+              Sign in
+            </a>
+          </p>
+        </div>
       </Card>
     </div>
   );
