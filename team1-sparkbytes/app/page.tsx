@@ -83,9 +83,9 @@ export default function Home() {
     const router = useRouter();
 
   useEffect(() => {
-    if (localStorage.getItem("loggedIn") !== "true") {
-      router.push("/auth/login");
-    }
+    // if (localStorage.getItem("loggedIn") !== "true") {
+    //   router.push("/auth/login");
+    // }
   }, []);
   const [filter, setFilter] = useState("All");
   const [favorites, setFavorites] = useState<number[]>([]);
