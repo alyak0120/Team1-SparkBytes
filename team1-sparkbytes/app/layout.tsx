@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { AuthButton } from "@/components/auth-button"; 
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -27,14 +28,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+        {/* header with auth button*/}
+       <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
         >
-          {children}
-        </ThemeProvider>
+      <header className="w-full border-b">
+        <div className="mx-auto max-w-6xl py-3 px-4 flex items-center justify-between">
+          <div className="font-semibold">SparkBytes</div>
+          <AuthButton /> {/* this is the new button */}
+        </div>
+      </header>
+
+      <main>{children}</main>
+      </ThemeProvider>
+
       </body>
     </html>
   );
