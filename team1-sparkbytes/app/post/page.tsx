@@ -1,8 +1,9 @@
-'use client';
-import {Form, Input, Button, Select, Card, Typography, DatePicker, TimePicker} from 'antd';
+"use client";
+import {Form, Input, Button, Select, Card, Typography, DatePicker, TimePicker, message} from 'antd';
 import {useState} from 'react';
 import { useRouter } from "next/navigation";
 import dayjs from 'dayjs';
+import { createClient } from '@/lib/supabase/client';
 
 
 export default function NewEvent() {
@@ -11,7 +12,40 @@ export default function NewEvent() {
 
     const handleFinish = async (values: any) => {
         setLoading(true);
-        //add logic to add data to database and handle form submission...
+        try {
+            const supabase = createClient();
+
+            // Convert Dayjs objects to an ISO datetime string
+            const date = values.date && values.date.format('YYYY-MM-DD');
+            const time = values.time && values.time.format('HH:mm');
+            const starts_at = date && time ? dayjs(`${date} ${time}`).toISOString() : null;
+
+            const payload: any = {
+                title: values.title,
+                category: values.category,
+                description: values.description,
+                area: values.area,
+                address: values.address,
+                building: values.building || null,
+                room: values.room || null,
+                starts_at,
+            };
+
+            const { data, error } = await supabase.from('events').insert([payload]);
+
+            if (error) {
+                console.error('Supabase insert error', error);
+                message.error('Failed to post event. Please try again.');
+            } else {
+                message.success('Event posted successfully');
+                router.push('/');
+            }
+        } catch (err) {
+            console.error(err);
+            message.error('An unexpected error occurred');
+        } finally {
+            setLoading(false);
+        }
     }
 
     const addressRegex = /^[0-9A-Za-z\s.,'-]+,\s*[A-Za-z\s]+,\s*[A-Za-z]{2}\s*\d{5}(-\d{4})?$/;
