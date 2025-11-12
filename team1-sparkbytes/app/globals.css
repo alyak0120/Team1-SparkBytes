@@ -68,3 +68,34 @@
     min-height: 100vh;
   }
 }
+
+.floating-post-button {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  border-radius: 50%;
+  background-color: #cc0000;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display:flex;
+  justify-content: center;
+  align-items:center;
+  transition: all 0.25s ease;
+  z-index: 1000;
+  padding:0;
+  line-height:1;
+}
+
+.floating-post-button:hover{
+  transform: scale(1,1);
+  box-shadow: 0 6px 16px rgba(204, 0, 0, 0.4);
+  background-color: #e60000;
+}
+
+.plus-icon{
+  font-size: 28px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
