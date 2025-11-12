@@ -78,7 +78,10 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
       <Card className="w-full max-w-lg" style={{ padding: '2rem' }}>
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center">
-            <Sparkles className="w-10 h-10 text-white" />
+              <img 
+              src="https://content.sportslogos.net/logos/30/619/full/boston_university_terriers_logo_secondary_2005_sportslogosnet-9216.png"
+              alt="Boston University Logo">
+              </img>
           </div>
         </div>
         
