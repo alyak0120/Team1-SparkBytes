@@ -11,9 +11,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { Header, Content, Footer } from "antd/lib/layout/layout";
 
-import profile_img from "../../../public/images/profile_img.png";
-
-import { createClient } from "@/lib/supabase/client";
+import profile_img from "../../public/images/profile_img.png";
+import Panel from "antd/lib/splitter/Panel";
 
 const supabase = createClient(); // serves as a window to the DB
 // console.log(supabase);
