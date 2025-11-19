@@ -5,6 +5,10 @@ import { Card, Input, Button, Checkbox, message } from 'antd';
 import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Sparkles } from 'lucide-react';
 
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient(); // serves as a window to the DB
+
 interface SignUpProps {
   onSignUp: () => void;
   onNavigate?: (path: string) => void;
@@ -62,7 +66,26 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // console.log(formData);
+
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          name: formData.name
+        }
+      }
+    });
+
+    if (error) {
+      console.error('Error signing up:', error.message);
+      return null;
+    } else {
+      console.log('User signed up:', data.user);
+    }
+
     if (validateForm()) {
       setLoading(true);
       setTimeout(() => {

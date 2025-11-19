@@ -37,6 +37,14 @@ const menuItems = [
   }
 ]
 
+const sampleAccount = {
+  firstName: "firstName",
+  lastName: "lastName",
+  email: "test@bu.edu",
+  BUID: "U12345678",
+  preferences: {},
+}
+
 const Home = () => {
   const notificationRef = useRef(null);
 
@@ -96,13 +104,13 @@ const Home = () => {
                 <Title style={{color: "#E0E0E0", margin: 0, padding: 8}} level={2}>Profile </Title>
                 <div style={{paddingLeft: 10}}>
                   <Text style={{color: "#E0E0E0", fontSize: 20}}>Full Name:</Text> <br/>
-                  <Input style={{ width: 200}} placeholder="First Name, Last Name"/> <br/>
+                  <Input style={{ width: 200}} placeholder="First Name, Last Name" value={`${sampleAccount.firstName} ${sampleAccount.lastName}`} readOnly/> <br/>
                     
                   <Text style={{color: "#E0E0E0", fontSize: 20}}>Email:</Text> <br/>
-                  <Input style={{ width: 200}} placeholder="BU Email"/> <br/>
+                  <Input style={{ width: 200}} placeholder="BU Email" value={sampleAccount.email} readOnly/> <br/>
                   
                   <Text style={{color: "#E0E0E0", fontSize: 20}}>BU ID:</Text> <br/>
-                  <Input style={{ width: 200}} placeholder="BU ID"/> <br/>
+                  <Input style={{ width: 200}} placeholder="BU ID" value={sampleAccount.BUID} readOnly/> <br/>
                 </div>
 
                 <Divider style={{background: "#E0E0E0", marginBottom: 0}} size="large" type="horizontal"/>
