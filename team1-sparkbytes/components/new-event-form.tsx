@@ -13,7 +13,7 @@ export default function NewEvent() {
         setLoading(true);
         //add logic to add data to database and handle form submission...
         if (true) {//replace w/ success condition later
-            router.push('/event');
+            router.push('/post/success');
         } else {
             setLoading(false);
             //handle errors?
