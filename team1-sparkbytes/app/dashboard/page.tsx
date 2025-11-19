@@ -6,7 +6,7 @@ import Sider from "antd/lib/layout/Sider";
 
 import { Header, Content, Footer } from "antd/lib/layout/layout";
 
-import profile_img from "../public/images/profile_img.png";
+import profile_img from "../../public/images/profile_img.png";
 import Panel from "antd/lib/splitter/Panel";
 
 const text = "ehy";
