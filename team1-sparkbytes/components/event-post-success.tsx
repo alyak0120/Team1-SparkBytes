@@ -14,7 +14,7 @@ export default function EventPostSuccess() {
 
     useEffect(()=>{
         const timer=setTimeout(()=>{
-            router.push("/events");
+            router.push("/event");
         }, 3000);
         return () => clearTimeout(timer);
     }, [router]);
