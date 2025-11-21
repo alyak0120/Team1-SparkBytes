@@ -14,7 +14,7 @@ Follow the steps below to set up your development environment.
 git clone <repository-url>
 cd <repository-folder>
 
-### **1. Clone the repository**
+### **2. Install dependencies**
 npm install
 # or
 yarn install
