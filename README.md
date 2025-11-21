@@ -16,14 +16,14 @@ cd <repository-folder>
 
 ### **2. Install dependencies**
 npm install
-# or
+or
 yarn install
 
 ## 3. Set up development environment (create env.local file)
 
 ## 4. Run the development server
 npm run dev
-# or
+or
 yarn dev
 
 ---
