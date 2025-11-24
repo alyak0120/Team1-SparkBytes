@@ -27,8 +27,9 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     if (onNavigate) onNavigate(path);
   };
 
-
+  // --------------------------
   // FORM VALIDATION
+  // --------------------------
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -57,12 +58,12 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     if (!formData.agreement) newErrors.agreement = "Please accept the terms";
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
-  
-  //SUPABASE SIGN-UP HANDLER
+  // --------------------------
+  // SUPABASE SIGN-UP HANDLER
+  // --------------------------
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -71,7 +72,7 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     try {
       const supabase = createClient();
 
-      // Create account in Supabase AUTH
+      // 1) Create account in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -88,8 +89,29 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
         return;
       }
 
+      const user = data.user;
+
+      // 2) Create matching row in "profiles" table
+      if (user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,          // must match auth user id
+            name: formData.name,
+            email: formData.email,
+          });
+
+        if (profileError) {
+          console.error("Profile insertion error:", profileError);
+          message.warning(
+            "Account created, but there was a problem saving your profile."
+          );
+        }
+      }
+
+      // 3) Success → send user to login
       message.success("Account created successfully! You can now log in.");
-      onSignUp(); // route to /auth/login
+      onSignUp(); // your page.tsx will redirect to /auth/login
 
     } catch (err: any) {
       console.error("Unexpected sign up error:", err);
@@ -99,13 +121,13 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     }
   };
 
-
+  // --------------------------
   // UI
+  // --------------------------
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-lg" style={{ padding: "2rem" }}>
-
-        {/*Logo*/}
+        {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center">
             <Sparkles className="w-10 h-10 text-white" />
@@ -117,10 +139,9 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
           Help reduce food waste at BU
         </p>
 
-        {/*FORM*/}
+        {/* FORM */}
         <div className="space-y-5">
-
-          {/*Full Name*/}
+          {/* Full Name */}
           <div>
             <label className="block text-sm mb-1.5">Full Name</label>
             <Input
@@ -134,10 +155,12 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
                 setErrors({ ...errors, name: "" });
               }}
             />
-            {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
+            {errors.name && (
+              <div className="text-red-500 text-sm mt-1">{errors.name}</div>
+            )}
           </div>
 
-          {/*Email*/}
+          {/* Email */}
           <div>
             <label className="block text-sm mb-1.5">BU Email</label>
             <Input
@@ -151,10 +174,12 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
                 setErrors({ ...errors, email: "" });
               }}
             />
-            {errors.email && <div className="text-red-500 text-sm mt-1">{errors.email}</div>}
+            {errors.email && (
+              <div className="text-red-500 text-sm mt-1">{errors.email}</div>
+            )}
           </div>
 
-          {/*Password*/}
+          {/* Password */}
           <div>
             <label className="block text-sm mb-1.5">Password</label>
             <Input.Password
@@ -168,10 +193,14 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
                 setErrors({ ...errors, password: "" });
               }}
             />
-            {errors.password && <div className="text-red-500 text-sm mt-1">{errors.password}</div>}
+            {errors.password && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.password}
+              </div>
+            )}
           </div>
 
-          {/*Confirm Password */}
+          {/* Confirm Password */}
           <div>
             <label className="block text-sm mb-1.5">Confirm Password</label>
             <Input.Password
@@ -181,14 +210,21 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
               value={formData.confirmPassword}
               status={errors.confirmPassword ? "error" : ""}
               onChange={(e) => {
-                setFormData({ ...formData, confirmPassword: e.target.value });
+                setFormData({
+                  ...formData,
+                  confirmPassword: e.target.value,
+                });
                 setErrors({ ...errors, confirmPassword: "" });
               }}
             />
-            {errors.confirmPassword && <div className="text-red-500 text-sm mt-1">{errors.confirmPassword}</div>}
+            {errors.confirmPassword && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword}
+              </div>
+            )}
           </div>
 
-          {/*Agreement*/}
+          {/* Agreement */}
           <div>
             <Checkbox
               checked={formData.agreement}
@@ -201,10 +237,14 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
                 I understand that SparkBytes is available for BU students only
               </span>
             </Checkbox>
-            {errors.agreement && <div className="text-red-500 text-sm mt-1">{errors.agreement}</div>}
+            {errors.agreement && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.agreement}
+              </div>
+            )}
           </div>
 
-          {/*Submit*/}
+          {/* Submit */}
           <Button
             type="primary"
             size="large"
@@ -217,7 +257,7 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
           </Button>
         </div>
 
-        {/*Login*/}
+        {/* Login link */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
@@ -229,7 +269,6 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
             </a>
           </p>
         </div>
-
       </Card>
     </div>
   );
