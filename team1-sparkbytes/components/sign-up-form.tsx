@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, Input, Button, Checkbox, message } from "antd";
 import { MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Sparkles } from "lucide-react";
-import { createClient } from "@/lib/supabase/client"; // ✅ single import
+import { createClient } from "@/lib/supabase/client"; //single import
 
 interface SignUpProps {
   onSignUp: () => void;
@@ -63,14 +63,14 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 🔥 now actually uses Supabase instead of setTimeout
+  //now actually uses Supabase instead of setTimeout
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setLoading(true);
 
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
 
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,

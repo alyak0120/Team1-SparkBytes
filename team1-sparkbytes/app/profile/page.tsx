@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ProfilePage() {
-  // 1) create Supabase server client
-  const supabase = createClient();
+  //create Supabase server client
+  const supabase = await createClient();
 
-  // 2) get current user from Supabase Auth (accounts table)
+  //get current user from Supabase Auth (accounts table)
   const {
     data: { user },
     error: userError,
