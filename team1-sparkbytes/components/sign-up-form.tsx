@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, Input, Button, Checkbox, message } from "antd";
 import { MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Sparkles } from "lucide-react";
-import { createClient } from "@/lib/supabase/client"; // correct single import
+import { createClient } from "@/lib/supabase/client";
 
 interface SignUpProps {
   onSignUp: () => void;
@@ -27,9 +27,7 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     if (onNavigate) onNavigate(path);
   };
 
-  // --------------------------
   // FORM VALIDATION
-  // --------------------------
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -61,9 +59,7 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // --------------------------
-  // SUPABASE SIGN-UP HANDLER
-  // --------------------------
+  //SUPABASE SIGN-UP HANDLER
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -72,13 +68,13 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     try {
       const supabase = createClient();
 
-      // 1) Create account in Supabase Auth
+      //Create account in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            full_name: formData.name,
+            full_name: formData.name, //metadata in auth
           },
         },
       });
@@ -91,18 +87,21 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
 
       const user = data.user;
 
-      // 2) Create matching row in "profiles" table
+      //Upsert into "profiles" so we don't conflict with any triggers
       if (user) {
         const { error: profileError } = await supabase
           .from("profiles")
-          .insert({
-            id: user.id,          // must match auth user id
-            name: formData.name,
-            email: formData.email,
-          });
+          .upsert(
+            {
+              id: user.id,            //must match auth user.id
+              name: formData.name,    //if your column is full_name, change this key
+              email: formData.email,
+            },
+            { onConflict: "id" },     //if row exists, this becomes an update
+          );
 
         if (profileError) {
-          console.error("Profile insertion error:", profileError);
+          console.error("Profile upsert error:", profileError);
           message.warning(
             "Account created, but there was a problem saving your profile."
           );
@@ -111,7 +110,7 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
 
       // 3) Success → send user to login
       message.success("Account created successfully! You can now log in.");
-      onSignUp(); // your page.tsx will redirect to /auth/login
+      onSignUp(); // your /auth/signup page sends them to /auth/login
 
     } catch (err: any) {
       console.error("Unexpected sign up error:", err);
@@ -121,9 +120,8 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     }
   };
 
-  // --------------------------
+  
   // UI
-  // --------------------------
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-lg" style={{ padding: "2rem" }}>
