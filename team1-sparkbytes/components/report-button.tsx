@@ -1,74 +1,65 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Modal, Select, Input, message } from "antd";
+import { Modal, Button, Form, Input, Select } from "antd";
 import { FlagOutlined } from "@ant-design/icons";
 import { createClient } from "@/lib/supabase/client";
 
 const { TextArea } = Input;
 
-interface ReportButtonProps {
-  eventId: number;  //bigint in DB, number in TS
-  eventTitle?: string; //modal title
-}
+type ReportButtonProps = {
+  eventId: number;        // matches events.id (bigint)
+  eventTitle: string;
+};
 
 export default function ReportButton({ eventId, eventTitle }: ReportButtonProps) {
   const [open, setOpen] = useState(false);
-  const [reportType, setReportType] = useState<string | undefined>();
-  const [comment, setComment] = useState("");
+  const [submittedOpen, setSubmittedOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const handleOpen = () => setOpen(true);
-
-  const handleClose = () => {
-    if (!loading) {
-      setOpen(false);
-      setReportType(undefined);
-      setComment("");
-    }
-  };
+  const [form] = Form.useForm();
 
   const handleSubmit = async () => {
-    if (!reportType) {
-      message.error("Please select a report type.");
-      return;
-    }
-
-    setLoading(true);
-
     try {
+      // validate form fields
+      const values = await form.validateFields();
+      setLoading(true);
+
       const supabase = createClient();
 
-      // 1) get current logged-in user
+      // get current user
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        message.error("You must be logged in to submit a report.");
-        setLoading(false);
+        console.error("Auth error:", userError);
+        alert("You must be logged in to submit a report.");
         return;
       }
 
-      //insert into reports table
+      // insert row into reports table
       const { error } = await supabase.from("reports").insert({
-        user_id: user.id,  //uuid
-        event_id: eventId, //bigint
-        report_type: reportType,
-        comment: comment || null,
+        user_id: user.id,           // uuid
+        event_id: eventId,          // bigint (int8)
+        event_title: eventTitle,    // make sure this column exists in reports
+        report_type: values.type,   // from the Select
+        comment: values.comment || "",
       });
 
       if (error) {
-        console.error("Error submitting report:", error);
-        message.error("Could not submit report. Please try again.");
-      } else {
-        message.success("Report submitted. Thank you for your feedback.");
-        handleClose();
+        console.error("Insert error:", error);
+        alert("Failed to submit report. Check console for details.");
+        return;
       }
+
+      // success – close form and show thank-you modal
+      form.resetFields();
+      setOpen(false);
+      setSubmittedOpen(true);
     } catch (err) {
       console.error("Unexpected error submitting report:", err);
-      message.error("Something went wrong. Please try again.");
+      alert("Something went wrong submitting the report.");
     } finally {
       setLoading(false);
     }
@@ -76,61 +67,58 @@ export default function ReportButton({ eventId, eventTitle }: ReportButtonProps)
 
   return (
     <>
-      {/* report. button */}
+      {/* Button on the card */}
       <Button
-        icon={<FlagOutlined />}
-        size="small"
-        onClick={handleOpen}
         danger
-        type="text"
+        icon={<FlagOutlined />}
+        onClick={() => setOpen(true)}
       >
         Report
       </Button>
 
+      {/* Report form modal */}
       <Modal
-        title={eventTitle ? `Report "${eventTitle}"` : "Report this event"}
+        title={`Report: ${eventTitle}`}
         open={open}
+        onCancel={() => setOpen(false)}
         onOk={handleSubmit}
-        onCancel={handleClose}
-        confirmLoading={loading}
         okText="Submit report"
+        confirmLoading={loading}
       >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm mb-1">Report type</label>
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Report type"
+            name="type"
+            rules={[{ required: true, message: "Please choose a report type" }]}
+          >
             <Select
-              value={reportType}
-              onChange={(value) => setReportType(value)}
-              placeholder="Choose a reason"
-              style={{ width: "100%" }}
-            >
-              <Select.Option value="inaccurate-info">
-                Inaccurate information
-              </Select.Option>
-              <Select.Option value="inappropriate-content">
-                Inappropriate content
-              </Select.Option>
-              <Select.Option value="safety-concern">
-                Safety concern
-              </Select.Option>
-              <Select.Option value="other">
-                Other
-              </Select.Option>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1">
-              Additional details (optional)
-            </label>
-            <TextArea
-              rows={4}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Describe the issue..."
+              placeholder="Select a reason"
+              options={[
+                { value: "inaccurate_info", label: "Inaccurate information" },
+                { value: "food_safety", label: "Food safety concern" },
+                { value: "already_gone", label: "Food already gone" },
+                { value: "other", label: "Other" },
+              ]}
             />
-          </div>
-        </div>
+          </Form.Item>
+
+          <Form.Item label="Additional comments" name="comment">
+            <TextArea rows={4} placeholder="Optional details..." />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* thank you*/}
+      <Modal
+        open={submittedOpen}
+        footer={
+          <Button type="primary" onClick={() => setSubmittedOpen(false)}>
+            Back to events
+          </Button>
+        }
+        onCancel={() => setSubmittedOpen(false)}
+      >
+        <p>Thank you! Your report has been submitted.</p>
       </Modal>
     </>
   );
