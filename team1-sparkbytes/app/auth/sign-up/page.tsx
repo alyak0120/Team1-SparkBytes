@@ -1,5 +1,9 @@
 "use client";
 
+
+
+
+
 import { useRouter } from "next/navigation";
 import SignUpForm from "@/components/sign-up-form";
 
