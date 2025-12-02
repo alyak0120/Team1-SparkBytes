@@ -163,13 +163,7 @@ location.includes(e.campus)).sort((a,b) => {
           Map
         </Button>
         </Space>
-            <Button
-            type="default"
-             icon={<BookOutlined />} // import from @ant-design/icons
-            onClick={() => router.push("/bookmarks")}
-    >
-      Bookmarks
-    </Button>
+            
 
         <Space wrap>
           {categories.map((e) => (
