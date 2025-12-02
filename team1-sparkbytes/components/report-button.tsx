@@ -40,7 +40,8 @@ export default function ReportButton({ eventId, eventTitle }: ReportButtonProps)
 
       // insert row into reports table
       const { error } = await supabase.from("reports").insert({
-        user_id: user.id,           // uuid
+        user_id: user.id, //uuid
+        user_email: user.email, //store email
         event_id: eventId,          // bigint (int8)
         event_title: eventTitle,    // make sure this column exists in reports
         report_type: values.type,   // from the Select
