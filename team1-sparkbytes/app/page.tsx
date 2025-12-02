@@ -249,40 +249,55 @@ location.includes(e.campus)).sort((a,b) => {
                     </Space>
 
                     <Space
-                      size="middle"
+                      size="small"
                       style={{
                         width: "100%",
                         display: "flex",
-                        justifyContent: "space-between",
-                        borderTop: "1 px solid #f0f0f0",
+                        flexWrap: "wrap",
+                        justifyContent: "flex-start",
+                        gap: 8,
+                        borderTop: "1px solid #f0f0f0",
                         paddingTop: 8,
-                      }}>
-                      <Tooltip title="Favorite">
-                        <Button 
-                          type="text" 
-                          icon={favorites.includes(event.id)? (<HeartFilled style={{color:"#CC0000"}} />) :
-                        (<HeartOutlined/>)} 
-                          onClick={() => favs(event.id)}
-                        />
-                      </Tooltip>
+                      }}
+                    >
+
+                    {/* Favorite */}
+                    <Tooltip title="Favorite">
                       <Button 
-                        key="reserve" 
-                        type={reserves.includes(event.id) ? "default" : "primary"}
-                        style={{
-                          transition: "all 0.3s ease",
-                          backgroundColor: reserves.includes(event.id) ? "#52c41a": undefined,
-                          color: reserves.includes(event.id) ? "white": undefined,
-                          borderColor: reserves.includes(event.id) ? "#52c41a" : undefined,
-                          minWidth: 100,
-                        }}
-                        icon={reserves.includes(event.id) ? <span>✅</span> : null}
-                        onClick={() => reserve(event.id)}>
-                        {reserves.includes(event.id) ? "Reserved" : "Reserve"}
-                      </Button>
-                      <BookmarkButton eventId={event.id} eventTitle={event.title} />
-                      <ReportButton eventId={event.id} eventTitle={event.title} />
-                        
-                      </Space>
+                        type="text" 
+                        icon={favorites.includes(event.id) ? (
+                          <HeartFilled style={{ color: "#CC0000" }} />
+                        ) : (
+                          <HeartOutlined />
+                        )}
+                        onClick={() => favs(event.id)}
+                      />
+                    </Tooltip>
+
+                    {/* Bookmark */}
+                    <BookmarkButton eventId={event.id} eventTitle={event.title} />
+
+                    {/* Reserve */}
+                    <Button 
+                      key="reserve" 
+                      type={reserves.includes(event.id) ? "default" : "primary"}
+                      style={{
+                        transition: "all 0.3s ease",
+                        backgroundColor: reserves.includes(event.id) ? "#52c41a" : undefined,
+                        color: reserves.includes(event.id) ? "white" : undefined,
+                        borderColor: reserves.includes(event.id) ? "#52c41a" : undefined,
+                        minWidth: 100,
+                      }}
+                      icon={reserves.includes(event.id) ? <span>✅</span> : null}
+                      onClick={() => reserve(event.id)}
+                    >
+                      {reserves.includes(event.id) ? "Reserved" : "Reserve"}
+                    </Button>
+
+                    {/* Report */}
+                    <ReportButton eventId={event.id} eventTitle={event.title} />
+                  </Space>
+
                   </Card>
                 </Col>
               )))} 

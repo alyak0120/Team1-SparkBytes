@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Button, Tooltip } from "antd";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import { createClient } from "@/lib/supabase/client";
+import { BookOutlined, BookFilled } from "@ant-design/icons";
+
 
 type BookmarkButtonProps = {
   eventId: number;
@@ -43,10 +45,11 @@ export default function BookmarkButton({ eventId, eventTitle }: BookmarkButtonPr
   return (
     <Tooltip title={bookmarked ? "Remove bookmark" : "Add bookmark"}>
       <Button
-        type="text"
-        icon={bookmarked ? <HeartFilled style={{ color: "#CC0000" }} /> : <HeartOutlined />}
-        onClick={toggleBookmark}
-      />
+    type="text"
+    icon={bookmarked ? <BookFilled style={{ color: "#CC0000" }} /> : <BookOutlined />}
+    onClick={toggleBookmark}
+    />
+
     </Tooltip>
   );
 }
