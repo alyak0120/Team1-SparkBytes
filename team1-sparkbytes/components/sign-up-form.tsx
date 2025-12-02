@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Card, Input, Button, Checkbox, message } from "antd";
-import { MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Sparkles } from "lucide-react";
+import { useState } from 'react';
+import { Card, Input, Button, Checkbox, message } from 'antd';
+import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Sparkles } from 'lucide-react';
+
 import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient(); // serves as a window to the DB
 
 interface SignUpProps {
   onSignUp: () => void;
@@ -59,64 +62,14 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  //SUPABASE SIGN-UP HANDLER
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
-
-    try {
-      const supabase = createClient();
-
-      //Create account in Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.name, //metadata in auth
-          },
-        },
-      });
-
-      if (error) {
-        console.error("Sign up error:", error);
-        message.error(error.message || "Sign-up failed");
-        return;
-      }
-
-      const user = data.user;
-
-      //Upsert into "profiles" so we don't conflict with any triggers
-      if (user) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .upsert(
-            {
-              id: user.id,            //must match auth user.id
-              name: formData.name,    //if your column is full_name, change this key
-              email: formData.email,
-            },
-            { onConflict: "id" },     //if row exists, this becomes an update
-          );
-
-        if (profileError) {
-          console.error("Profile upsert error:", profileError);
-          message.warning(
-            "Account created, but there was a problem saving your profile."
-          );
-        }
-      }
-
-      // 3) Success → send user to login
-      message.success("Account created successfully! You can now log in.");
-      onSignUp(); // your /auth/signup page sends them to /auth/login
-
-    } catch (err: any) {
-      console.error("Unexpected sign up error:", err);
-      message.error(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+  const handleSubmit = () => {
+    if (validateForm()) {
+      setLoading(true);
+      setTimeout(() => {
+        message.success('Account created successfully!');
+        setLoading(false);
+        onSignUp();
+      }, 500);
     }
   };
 
@@ -128,7 +81,10 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center">
-            <Sparkles className="w-10 h-10 text-white" />
+              <img 
+              src="https://content.sportslogos.net/logos/30/619/full/boston_university_terriers_logo_secondary_2005_sportslogosnet-9216.png"
+              alt="Boston University Logo">
+              </img>
           </div>
         </div>
 

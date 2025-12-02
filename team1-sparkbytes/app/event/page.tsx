@@ -2,12 +2,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {useState} from 'react';
-import {Card, Button, Tag, Select, Row, Col, Typography, Space, Tooltip, Empty, ConfigProvider, theme} from 'antd';
-import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, HeartFilled, FlagOutlined, UnorderedListOutlined} from '@ant-design/icons';
-import ReportButton from "@/components/report-button";
-import BookmarkButton from "@/components/bookmark-button";
-import { BookOutlined, BookFilled } from "@ant-design/icons";
-
+import {Card, Button, Tag, Select, Row, Col, Typography, Space, Tooltip, Empty, ConfigProvider, theme, Input} from 'antd';
+import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, HeartFilled, FlagOutlined, UnorderedListOutlined, PlusOutlined} from '@ant-design/icons';
+import Map from "@/components/map";
+const {Search} = Input;
 
 const defaults: Record<string, string> = {
   Pizza: "/images/pizza.jpg",
@@ -99,12 +97,14 @@ export default function Home() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [allergy, setAllergy] = useState<string[]>([]);
   const [location, setLocation] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
 
 
 const filteredEvents = mockEvents.filter((e) => filter === "All" || e.category === filter).filter((e) => dietary.length === 0 ||
 dietary.some(dopts => e.dietary.includes(dopts))).filter((e) => allergy.length === 0 ||
 allergy.every(aopts => !e.allergies.includes(aopts))).filter((e) => location.length === 0 ||
-location.includes(e.campus)).sort((a,b) => {
+location.includes(e.campus)).filter((e) => e.title.toLowerCase().includes(search.toLowerCase()) || 
+e.description.toLowerCase().includes(search.toLowerCase()) || e.location.toLowerCase().includes(search.toLowerCase())).sort((a,b) => {
   if (sort==="time") return a.id - b.id;
   if (sort === "servings") return b.servingsLeft-a.servingsLeft;
   return 0;
@@ -149,6 +149,12 @@ location.includes(e.campus)).sort((a,b) => {
         >
           Map
         </Button>
+        <Search placeholder="Search events..."
+          allowClear
+          enterButton
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{width:400}}/>
         </Space>
         <Space wrap>
           {categories.map((e) => (
@@ -169,7 +175,6 @@ location.includes(e.campus)).sort((a,b) => {
         <Select value={sort} onChange={(value: "time" | "servings") => setSort(value)} options={sortOptions} style={{width:160}}/>
     </Space>
     </Row>
-
     <Row gutter={[16,16]} style={{marginTop: 16}}>
       <Col xs={24} sm={8}>
           <Select
@@ -289,13 +294,22 @@ location.includes(e.campus)).sort((a,b) => {
               )))} 
             </Row>
           ) : (<Card style={{textAlign: "center"}}>
-            <Empty description="Map View Placeholder" image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+             <Map />
             <Typography.Text style={{display: "block", marginTop:8}}>
               hopefully a map....
             </Typography.Text>
           </Card>)}
           </div>
+          <Tooltip title="Post a new event">
+          <Button
+            type="primary"
+            shape="circle"
+            size="large"
+            icon={<PlusOutlined className="plus-icon"/>}
+            className="floating-post-button"
+            onClick={() => router.push("/post")}>
+            </Button>
+            </Tooltip>
     </Space>
     </ConfigProvider>
   );
