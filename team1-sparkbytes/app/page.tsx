@@ -6,6 +6,7 @@ import {Card, Button, Tag, Select, Row, Col, Typography, Space, Tooltip, Empty, 
 import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, HeartFilled, FlagOutlined, UnorderedListOutlined} from '@ant-design/icons';
 import ReportButton from "@/components/report-button";
 import BookmarkButton from "@/components/bookmark-button";
+import { BookOutlined, BookFilled } from "@ant-design/icons";
 
 
 const defaults: Record<string, string> = {
@@ -149,6 +150,14 @@ location.includes(e.campus)).sort((a,b) => {
           Map
         </Button>
         </Space>
+            <Button
+            type="default"
+             icon={<BookOutlined />} // import from @ant-design/icons
+            onClick={() => router.push("/bookmarks")}
+    >
+      Bookmarks
+    </Button>
+
         <Space wrap>
           {categories.map((e) => (
             <Tag
