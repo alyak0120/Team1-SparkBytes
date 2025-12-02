@@ -5,6 +5,8 @@ import {useState} from 'react';
 import {Card, Button, Tag, Select, Row, Col, Typography, Space, Tooltip, Empty, ConfigProvider, theme} from 'antd';
 import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, HeartFilled, FlagOutlined, UnorderedListOutlined} from '@ant-design/icons';
 import ReportButton from "@/components/report-button";
+import BookmarkButton from "@/components/bookmark-button";
+
 
 const defaults: Record<string, string> = {
   Pizza: "/images/pizza.jpg",
@@ -277,8 +279,9 @@ location.includes(e.campus)).sort((a,b) => {
                         onClick={() => reserve(event.id)}>
                         {reserves.includes(event.id) ? "Reserved" : "Reserve"}
                       </Button>
+                      <BookmarkButton eventId={event.id} eventTitle={event.title} />
                       <ReportButton eventId={event.id} eventTitle={event.title} />
-
+                        
                       </Space>
                   </Card>
                 </Col>
