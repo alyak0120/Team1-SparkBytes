@@ -7,6 +7,9 @@ import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, H
 import ReportButton from "@/components/report-button";
 import BookmarkButton from "@/components/bookmark-button";
 import { BookOutlined, BookFilled } from "@ant-design/icons";
+import { MenuOutlined } from "@ant-design/icons";
+import { Drawer, Menu } from "antd";
+
 
 
 const defaults: Record<string, string> = {
@@ -99,6 +102,8 @@ export default function Home() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [allergy, setAllergy] = useState<string[]>([]);
   const [location, setLocation] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
 
 
 const filteredEvents = mockEvents.filter((e) => filter === "All" || e.category === filter).filter((e) => dietary.length === 0 ||
@@ -129,11 +134,19 @@ location.includes(e.campus)).sort((a,b) => {
         }
       }}
     >
+      
+
     <Space
       size="large"
       direction="vertical"
       style={{width: '100%', padding: '24px 32px'}}>
       <Row justify="space-between" align="middle" style={{marginBottom: 12}}>
+        {/*HAMBURGER*/}
+         <Button
+        type="text"
+        icon={<MenuOutlined />}
+        onClick={() => setDrawerOpen(true)}
+      />
       <Space size="middle" wrap>
       <Button
         type={layout === "list" ? "primary" : "default"}
@@ -319,6 +332,24 @@ location.includes(e.campus)).sort((a,b) => {
             </Typography.Text>
           </Card>)}
           </div>
+          
+          {/*DRAWER*/}
+           <Drawer
+            title="Menu"
+            placement="left"
+            onClose={() => setDrawerOpen(false)}
+            open={drawerOpen}
+          >
+            <Menu
+              mode="inline"
+              items={[
+                { key: "account", icon: <UserOutlined />, label: "My Account", onClick: () => router.push("/account") },
+                { key: "bookmarks", icon: <BookOutlined />, label: "Bookmarks", onClick: () => router.push("/bookmarks") },
+                { key: "report", icon: <FlagOutlined />, label: "Report a Problem", onClick: () => router.push("/report") },
+              ]}
+            />
+          </Drawer>
+
     </Space>
     </ConfigProvider>
   );
