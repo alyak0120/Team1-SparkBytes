@@ -1,3 +1,157 @@
+ # Team1-SparkBytes
+
+ A full-stack Next.js application (app router) with Supabase-backed authentication and data storage. This repository implements the frontend UI components, auth flows, and backend helpers for interacting with Supabase. It was created as part of the Team 1 SparkBytes project.
+
+ **Status**: `feature/post-form` branch (work in progress)
+
+ ---
+
+ **Key Features**
+ - User authentication (sign up, login, password reset) via Supabase
+ - Protected routes and middleware integration
+ - Create/read event and post pages (forms & success pages)
+ - Reusable UI components with Tailwind CSS
+ - Supabase client helpers for server- and client-side usage
+
+ **Tech stack**
+ - Next.js (app router)
+ - React + TypeScript
+ - Tailwind CSS
+ - Supabase (Auth + Database)
+ - ESLint / Prettier (formatting & linting)
+
+ ---
+
+ **Repository layout (important files & folders)**
+ - `app/` — Next.js app routes and pages (app router). Contains `auth/`, `dashboard/`, `event/`, `post/`, and protected layout.
+ - `components/` — UI components and form components (auth forms, `map.tsx`, `new-event-form.tsx`, etc.).
+ - `lib/supabase/` — Supabase client, server helpers, and middleware (`client.ts`, `server.ts`, `middleware.ts`).
+ - `public/images/` — Static assets.
+ - `tailwind.config.ts`, `postcss.config.mjs` — Tailwind setup.
+
+ ---
+
+ **Prerequisites**
+ - Node.js (recommended v18+)
+ - npm or yarn (pnpm is also fine)
+ - A Supabase project (for Auth + Database)
+
+ ---
+
+ Getting started (local development)
+
+ 1. Clone the repo
+
+ ```bash
+ git clone <repo-url>
+ cd team1-sparkbytes
+ ```
+
+ 2. Install dependencies
+
+ ```bash
+ npm install
+ # or
+ # pnpm install
+ # or
+ # yarn
+ ```
+
+ 3. Create a Supabase project and get keys
+ - Go to https://app.supabase.com and create a project
+ - Get the `SUPABASE_URL` and `SUPABASE_ANON_KEY` from the project settings
+ - (Optional, for server-side operations) get the `SUPABASE_SERVICE_ROLE_KEY` from Project Settings → API
+
+ 4. Add environment variables
+ Create a `.env.local` at the project root with the following variables (example):
+
+ ```env
+ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+ NEXT_PUBLIC_SUPABASE_ANON_KEY=public-anon-key
+ # Optional server key (do NOT expose on the client)
+ SUPABASE_SERVICE_ROLE_KEY=service-role-key
+ # Next auth or other env vars if required
+ ```
+
+ 5. Run the dev server
+
+ ```bash
+ npm run dev
+ # or
+ # pnpm dev
+ # or
+ # yarn dev
+ ```
+ Open `http://localhost:3000` in your browser.
+
+ ---
+
+ Available scripts (common)
+ - `dev` — Runs the Next.js dev server
+ - `build` — Builds the app for production
+ - `start` — Runs the production build
+ - `lint` — Lints the codebase (if configured)
+ - `format` — Runs code formatter (if configured)
+
+ Check `package.json` for exact script names.
+
+ ---
+
+ Supabase setup notes
+ - Auth: enable Email/Password provider (and OAuth providers if needed)
+ - Database: create the tables required by the app (events, posts, profiles) if not present. Check server code in `lib/supabase/server.ts` for expected table names and columns.
+ - RLS & policies: if you enable Row Level Security, ensure appropriate policies exist for authenticated users to read/write their data.
+
+ ---
+
+ Authentication & middleware
+ - Client-side Supabase is initialized in `lib/supabase/client.ts` and used by UI components and pages.
+ - Server helpers are in `lib/supabase/server.ts` and `lib/supabase/middleware.ts` (used by Next middleware and server components).
+ - The `app/protected/` layout demonstrates protecting routes—see `app/protected/layout.tsx` for implementation details.
+
+ ---
+
+ Forms & components
+ - Auth forms are under `components/` (`login-form.tsx`, `sign-up-form.tsx`, `forgot-password-form.tsx`, `update-password-form.tsx`).
+ - Event/post forms are under `components/` (e.g., `new-event-form.tsx`) and use the Supabase client to persist data.
+ - Success pages (e.g., `components/event-post-success.tsx`) show operation results.
+
+ ---
+
+ Deployment
+ - Vercel is recommended for Next.js deployments. Connect your GitHub repo to Vercel, set environment variables in the Vercel dashboard, and deploy.
+ - Alternatively, deploy to any platform that supports Next.js and set the environment variables there.
+
+ ---
+
+ Troubleshooting
+ - Missing env keys: the app will fail to connect to Supabase. Confirm `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set.
+ - Auth errors: check Supabase project settings and Allowed Redirect URLs (if using OAuth).
+ - Server errors: see server logs and ensure `SUPABASE_SERVICE_ROLE_KEY` (if used) is set only on the server.
+
+ ---
+
+ Contributing
+ - Fork the repo and create feature branches
+ - Follow existing code style and run linters/formatters before opening a PR
+ - Describe changes and any required DB migrations or env vars in the PR body
+
+ ---
+
+ Next steps and recommendations
+ - Add a schema SQL file for the Database tables used by the app (events, posts, profiles).
+ - Add automated tests for critical components and API flows.
+ - Add CI for linting and deployment checks.
+
+ ---
+
+ Contact
+ - For questions about the code, see repository owner or the Team 1 SparkBytes maintainers.
+
+ ---
+
+ License
+ - Add a `LICENSE` file to the repository and state the chosen license (e.g., MIT).
 <a href="https://demo-nextjs-with-supabase.vercel.app/">
   <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
   <h1 align="center">Next.js and Supabase Starter Kit</h1>

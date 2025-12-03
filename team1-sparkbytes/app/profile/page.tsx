@@ -13,12 +13,12 @@ export default async function ProfilePage() {
     error: userError,
   } = await supabase.auth.getUser();
 
-  // if not logged in or there was an auth error → redirect to login
+  //if not logged in or there was an auth error → redirect to login
   if (userError || !user) {
     redirect("/auth/login");
   }
 
-  // 3) fetch user profile from the "profiles" table using the auth user id
+  //fetch user profile from the "profiles" table using the auth user id
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
@@ -29,7 +29,7 @@ export default async function ProfilePage() {
     console.error("Error loading profile:", profileError);
   }
 
-  // 4) render data
+  //render data
   return (
     <div className="flex-1 w-full max-w-2xl mx-auto py-10 px-4 space-y-6">
       <h1 className="text-3xl font-semibold">Your Profile</h1>

@@ -35,6 +35,11 @@ export default function RootLayout({
         enableSystem
         disableTransitionOnChange
         >
+      <div style={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+      }}>
       <header className="w-full border-b">
         <div className="mx-auto max-w-6xl py-3 px-4 flex items-center justify-between">
           <div className="font-semibold">SparkBytes</div>
@@ -42,7 +47,14 @@ export default function RootLayout({
         </div>
       </header>
 
-      <main>{children}</main>
+      <div style={{flex: 1}}>{children}</div>
+
+      <footer style={{ backgroundColor: "#CC0000", color: "#E0E0E0", textAlign: "center",
+        padding: "16px 0", fontWeight: "500", boxShadow: "0 -2px 8px rgba(0,0,0,0.2)"
+      }}>
+          © 2025 Spark!Bytes. All rights reserved.
+      </footer>
+      </div>
       </ThemeProvider>
 
       </body>

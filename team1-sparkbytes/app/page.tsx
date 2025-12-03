@@ -4,6 +4,13 @@ import { useRouter } from "next/navigation";
 import {useState} from 'react';
 import {Card, Button, Tag, Select, Row, Col, Typography, Space, Tooltip, Empty, ConfigProvider, theme} from 'antd';
 import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined, HeartOutlined, HeartFilled, FlagOutlined, UnorderedListOutlined} from '@ant-design/icons';
+import ReportButton from "@/components/report-button";
+import BookmarkButton from "@/components/bookmark-button";
+import { BookOutlined, BookFilled } from "@ant-design/icons";
+import { MenuOutlined } from "@ant-design/icons";
+import { Drawer, Menu } from "antd";
+
+
 
 const defaults: Record<string, string> = {
   Pizza: "/images/pizza.jpg",
@@ -95,6 +102,8 @@ export default function Home() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [allergy, setAllergy] = useState<string[]>([]);
   const [location, setLocation] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
 
 
 const filteredEvents = mockEvents.filter((e) => filter === "All" || e.category === filter).filter((e) => dietary.length === 0 ||
@@ -125,11 +134,19 @@ location.includes(e.campus)).sort((a,b) => {
         }
       }}
     >
+      
+
     <Space
       size="large"
       direction="vertical"
       style={{width: '100%', padding: '24px 32px'}}>
       <Row justify="space-between" align="middle" style={{marginBottom: 12}}>
+        {/*HAMBURGER*/}
+         <Button
+        type="text"
+        icon={<MenuOutlined />}
+        onClick={() => setDrawerOpen(true)}
+      />
       <Space size="middle" wrap>
       <Button
         type={layout === "list" ? "primary" : "default"}
@@ -146,6 +163,8 @@ location.includes(e.campus)).sort((a,b) => {
           Map
         </Button>
         </Space>
+            
+
         <Space wrap>
           {categories.map((e) => (
             <Tag
@@ -246,40 +265,55 @@ location.includes(e.campus)).sort((a,b) => {
                     </Space>
 
                     <Space
-                      size="middle"
+                      size="small"
                       style={{
                         width: "100%",
                         display: "flex",
-                        justifyContent: "space-between",
-                        borderTop: "1 px solid #f0f0f0",
+                        flexWrap: "wrap",
+                        justifyContent: "flex-start",
+                        gap: 8,
+                        borderTop: "1px solid #f0f0f0",
                         paddingTop: 8,
-                      }}>
-                      <Tooltip title="Favorite">
-                        <Button 
-                          type="text" 
-                          icon={favorites.includes(event.id)? (<HeartFilled style={{color:"#CC0000"}} />) :
-                        (<HeartOutlined/>)} 
-                          onClick={() => favs(event.id)}
-                        />
-                      </Tooltip>
+                      }}
+                    >
+
+                    {/* Favorite */}
+                    <Tooltip title="Favorite">
                       <Button 
-                        key="reserve" 
-                        type={reserves.includes(event.id) ? "default" : "primary"}
-                        style={{
-                          transition: "all 0.3s ease",
-                          backgroundColor: reserves.includes(event.id) ? "#52c41a": undefined,
-                          color: reserves.includes(event.id) ? "white": undefined,
-                          borderColor: reserves.includes(event.id) ? "#52c41a" : undefined,
-                          minWidth: 100,
-                        }}
-                        icon={reserves.includes(event.id) ? <span>✅</span> : null}
-                        onClick={() => reserve(event.id)}>
-                        {reserves.includes(event.id) ? "Reserved" : "Reserve"}
-                      </Button>
-                      <Button danger icon={<FlagOutlined/>}>
-                        Report
-                      </Button>
-                      </Space>
+                        type="text" 
+                        icon={favorites.includes(event.id) ? (
+                          <HeartFilled style={{ color: "#CC0000" }} />
+                        ) : (
+                          <HeartOutlined />
+                        )}
+                        onClick={() => favs(event.id)}
+                      />
+                    </Tooltip>
+
+                    {/* Bookmark */}
+                    <BookmarkButton eventId={event.id} eventTitle={event.title} />
+
+                    {/* Reserve */}
+                    <Button 
+                      key="reserve" 
+                      type={reserves.includes(event.id) ? "default" : "primary"}
+                      style={{
+                        transition: "all 0.3s ease",
+                        backgroundColor: reserves.includes(event.id) ? "#52c41a" : undefined,
+                        color: reserves.includes(event.id) ? "white" : undefined,
+                        borderColor: reserves.includes(event.id) ? "#52c41a" : undefined,
+                        minWidth: 100,
+                      }}
+                      icon={reserves.includes(event.id) ? <span>✅</span> : null}
+                      onClick={() => reserve(event.id)}
+                    >
+                      {reserves.includes(event.id) ? "Reserved" : "Reserve"}
+                    </Button>
+
+                    {/* Report */}
+                    <ReportButton eventId={event.id} eventTitle={event.title} />
+                  </Space>
+
                   </Card>
                 </Col>
               )))} 
@@ -292,7 +326,30 @@ location.includes(e.campus)).sort((a,b) => {
             </Typography.Text>
           </Card>)}
           </div>
+          
+          {/*DRAWER*/}
+           <Drawer
+            title="Menu"
+            placement="left"
+            onClose={() => setDrawerOpen(false)}
+            open={drawerOpen}
+          >
+            <Menu
+              mode="inline"
+              items={[
+                { key: "account", icon: <UserOutlined />, label: "My Account", onClick: () => router.push("/account") },
+                { key: "bookmarks", icon: <BookOutlined />, label: "Bookmarks", onClick: () => router.push("/bookmarks") },
+                { key: "report", icon: <FlagOutlined />, label: "Report a Problem", onClick: () => router.push("/report") },
+              ]}
+            />
+          </Drawer>
+
     </Space>
     </ConfigProvider>
   );
+}
+import Home from "@/components/home-client";
+
+export default function EventPage() {
+    return <Home />;
 }
