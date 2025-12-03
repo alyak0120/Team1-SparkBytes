@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Input, Button, Checkbox, message } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
   const router = useRouter();
+  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -41,22 +43,29 @@ export default function LoginForm() {
   // -----------------------------
   // Handle form submission
   // -----------------------------
-  const handleSubmit = () => {
-    if (validateForm()) {
-      setLoading(true);
-      setTimeout(() => {
-        message.success("Welcome back to SparkBytes!");
-        setLoading(false);
+  const handleSubmit = async () => {
+  if (!validateForm()) return;
 
-        // Store login state in localStorage (if needed)
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("userEmail", formData.email);
+  setLoading(true);
 
-        // Navigate to dashboard 
-        router.push("/event");
-      }, 500);
-    }
-  };
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: formData.email,
+    password: formData.password,
+  });
+
+  if (error) {
+    message.error(error.message);
+    setLoading(false);
+    return;
+  }
+
+  message.success("Welcome back to SparkBytes!");
+  setLoading(false);
+
+  // Supabase automatically stores the session in cookies/localStorage
+  router.push("/"); // redirect to dashboard
+};
+
 
   // -----------------------------
   // Navigation helpers

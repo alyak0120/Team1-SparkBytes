@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createClient() {
-  //IMPORTANT: cookies() is async in Next 16
+  // IMPORTANT: cookies() is async in Next 16
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -11,7 +11,7 @@ export async function createClient() {
     {
       cookies: {
         get(name: string) {
-          //cookieStore is now the resolved cookie object
+          // cookieStore is now the resolved cookie object
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
@@ -21,7 +21,6 @@ export async function createClient() {
           cookieStore.set({ name, value: "", ...options });
         },
       },
-    },
+    }
   );
 }
-

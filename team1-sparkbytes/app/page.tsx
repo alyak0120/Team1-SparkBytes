@@ -348,8 +348,3 @@ location.includes(e.campus)).sort((a,b) => {
     </ConfigProvider>
   );
 }
-import Home from "@/components/home-client";
-
-export default function EventPage() {
-    return <Home />;
-}

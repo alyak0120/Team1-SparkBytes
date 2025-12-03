@@ -62,16 +62,36 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      setLoading(true);
-      setTimeout(() => {
-        message.success('Account created successfully!');
-        setLoading(false);
-        onSignUp();
-      }, 500);
-    }
-  };
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+
+  setLoading(true);
+
+  const { data, error } = await supabase.auth.signUp({
+    email: formData.email,
+    password: formData.password,
+    options: {
+      data: { name: formData.name }, // store name in user metadata
+    },
+  });
+
+  if (error) {
+    message.error(error.message);
+    setLoading(false);
+    return;
+  }
+
+  // If email confirmations are enabled in Supabase, user must check inbox
+  if (data.user && !data.session) {
+    message.success("Account created! Please check your email to confirm.");
+  } else {
+    message.success("Account created successfully!");
+    onSignUp(); // navigate to login or dashboard
+  }
+
+  setLoading(false);
+};
+
 
   
   // UI
