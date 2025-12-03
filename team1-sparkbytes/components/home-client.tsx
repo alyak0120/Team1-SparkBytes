@@ -128,6 +128,7 @@ const filteredEvents = mockEvents
   };
   
   return(
+    <>
     <ConfigProvider
       theme={{
         algorithm: theme.defaultAlgorithm,
@@ -182,7 +183,11 @@ const filteredEvents = mockEvents
         ) : ( 
             <Map/>
         )}
+        </Space>
+        </ConfigProvider>
 
+
+      <div style={{position: "fixed", bottom: "120px", right: "40px", zIndex: 2000}}>
       <Tooltip title="Post a new event">
         <Button
             type="primary"
@@ -193,7 +198,7 @@ const filteredEvents = mockEvents
             onClick={() => router.push("/post")}
         />
         </Tooltip>
-        </Space>
-        </ConfigProvider>
+        </div>
+        </>
     );
     }
