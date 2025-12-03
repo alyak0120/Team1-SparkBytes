@@ -3,6 +3,8 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { AuthButton } from "@/components/auth-button"; 
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -41,9 +43,17 @@ export default function RootLayout({
           minHeight: "100vh",
       }}>
       <header className="w-full border-b">
-        <div className="mx-auto max-w-6xl py-3 px-4 flex items-center justify-between">
-          <div className="font-semibold">SparkBytes</div>
-          <AuthButton /> {/* this is the new button */}
+        <div className="flex">
+          <div className="max-w-6xl py-3 px-4 flex gap-2 items-center">
+            <Button size="sm"><Link href="/event">Events</Link></Button>
+            <Button size="sm"><Link href="/dashboard">Your Account</Link></Button>
+            <Button size="sm">About</Button>
+          </div>
+          <div className="ml-auto max-w-6xl py-3 px-4 flex items-center justify-between">
+            <div className="font-semibold">SparkBytes</div>
+            
+            <AuthButton /> {/* this is the new button */}
+          </div>
         </div>
       </header>
 
