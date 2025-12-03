@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { AuthButton } from "@/components/auth-button"; 
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -27,14 +28,35 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+        {/* header with auth button*/}
+       <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
         >
-          {children}
-        </ThemeProvider>
+      <div style={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+      }}>
+      <header className="w-full border-b">
+        <div className="mx-auto max-w-6xl py-3 px-4 flex items-center justify-between">
+          <div className="font-semibold">SparkBytes</div>
+          <AuthButton /> {/* this is the new button */}
+        </div>
+      </header>
+
+      <div style={{flex: 1}}>{children}</div>
+
+      <footer style={{ backgroundColor: "#CC0000", color: "#E0E0E0", textAlign: "center",
+        padding: "16px 0", fontWeight: "500", boxShadow: "0 -2px 8px rgba(0,0,0,0.2)"
+      }}>
+          © 2025 Spark!Bytes. All rights reserved.
+      </footer>
+      </div>
+      </ThemeProvider>
+
       </body>
     </html>
   );
