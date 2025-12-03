@@ -53,10 +53,11 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/auth")
   ) {
+    // BE SURE TO TAKE A LOOK AT THIS AGAIN IN THE FUTURE, MAY NEED TO COMMENT BACK IN
     // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
+    // const url = request.nextUrl.clone();
+    // url.pathname = "/auth/login";
+    // return NextResponse.redirect(url);
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

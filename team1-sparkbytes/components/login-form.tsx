@@ -52,8 +52,8 @@ export default function LoginForm() {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userEmail", formData.email);
 
-        // Navigate to dashboard or homepage
-        router.push("/");
+        // Navigate to dashboard 
+        router.push("/event");
       }, 500);
     }
   };
