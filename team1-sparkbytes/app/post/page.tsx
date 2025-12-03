@@ -3,7 +3,6 @@ import {Form, Input, Button, Select, Card, Typography, DatePicker, TimePicker, m
 import {useState} from 'react';
 import { useRouter } from "next/navigation";
 import dayjs from 'dayjs';
-import { createClient } from '@/lib/supabase/client';
 
 
 export default function NewEvent() {
@@ -13,8 +12,6 @@ export default function NewEvent() {
     const handleFinish = async (values: any) => {
         setLoading(true);
         try {
-            const supabase = createClient();
-
             // Convert Dayjs objects to an ISO datetime string
             const date = values.date && values.date.format('YYYY-MM-DD');
             const time = values.time && values.time.format('HH:mm');
@@ -31,10 +28,17 @@ export default function NewEvent() {
                 starts_at,
             };
 
-            const { data, error } = await supabase.from('events').insert([payload]);
+            // POST to the server route which uses a server-side Supabase admin client.
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
 
-            if (error) {
-                console.error('Supabase insert error', error);
+            const result = await res.json();
+
+            if (!res.ok) {
+                console.error('Server insert error', result);
                 message.error('Failed to post event. Please try again.');
             } else {
                 message.success('Event posted successfully');
