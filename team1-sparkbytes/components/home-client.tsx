@@ -1,16 +1,16 @@
 'use client';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {Space, Tooltip, ConfigProvider, theme, Button} from 'antd';
-import {PlusOutlined} from '@ant-design/icons';
+import { Space, Tooltip, ConfigProvider, theme, Button, Drawer, Menu } from 'antd';
+import { PlusOutlined, MenuOutlined, UserOutlined, BookOutlined, FlagOutlined } from '@ant-design/icons';
 import dynamic from "next/dynamic";
 import SearchBar from "@/components/search-bar";
 import Filters from "@/components/filters";
 import EventList from "@/components/event-list";
 
-
 const Map = dynamic(() => import('@/components/map'), { ssr: false });
-const defaults: Record<string, string> = {
+
+const defaults = {
   Pizza: "/images/pizza.jpg",
   Mexican: "/images/tacos.jpg",
   Asian: "/images/sushi.jpg",
@@ -30,7 +30,7 @@ const mockEvents = [
     servingsLeft: 10,
     image: "/images/pizza.jpg",
     dietary: ["Vegetarian"],
-    allergies: ["Contains Dairy", "Contains Gluten"],
+    allergies: ["Contains Dairy", "Contains Gluten"]
   },
   {
     id: 2,
@@ -43,7 +43,7 @@ const mockEvents = [
     servingsLeft: 6,
     image: "/images/tacos.jpg",
     dietary: ["Halal"],
-    allergies: ["Contains Gluten"],
+    allergies: ["Contains Gluten"]
   },
   {
     id: 3,
@@ -56,7 +56,7 @@ const mockEvents = [
     servingsLeft: 12,
     image: "/images/sushi.jpg",
     dietary: ["Pescatarian"],
-    allergies: ["Contains Soy"],
+    allergies: ["Contains Soy"]
   },
   {
     id: 4,
@@ -69,29 +69,21 @@ const mockEvents = [
     servingsLeft: 8,
     image: "/images/muffins.jpg",
     dietary: ["Vegetarian"],
-    allergies: ["Contains Dairy", "Contains Gluten"],
-  },
+    allergies: ["Contains Dairy", "Contains Gluten"]
+  }
 ];
 
-
-
-const categories = ["All", "Pizza", "Mexican", "Asian", "Breakfast", "Other"]; //does this make sense
+const categories = ["All", "Pizza", "Mexican", "Asian", "Breakfast", "Other"];
 const sortOptions = [
-  {value: "time", label: "Newest"},
-  {value: "servings", label: "Servings Left"},
+  { value: "time", label: "Newest" },
+  { value: "servings", label: "Servings Left" }
 ];
 const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Halal", "Kosher", "Pescatarian"];
 const allergyOptions = ["Peanut-Free", "Dairy-Free", "Soy-Free", "Gluten-Free"];
 const locationOptions = ["East Campus", "West Campus", "South Campus", "Central Campus", "Fenway Campus"];
 
 export default function Home() {
-    const router = useRouter();
-
-  useEffect(() => {
-    // if (localStorage.getItem("loggedIn") !== "true") {
-    //   router.push("/auth/login");
-    // }
-  }, []);
+  const router = useRouter();
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
@@ -101,104 +93,110 @@ export default function Home() {
   const [allergy, setAllergy] = useState<string[]>([]);
   const [location, setLocation] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const filteredEvents = mockEvents
+    .filter(e => categoryFilter.length === 0 || categoryFilter.includes(e.category))
+    .filter(e => dietary.length === 0 || dietary.every(d => e.dietary.includes(d)))
+    .filter(e => allergy.length === 0 || allergy.every(a => !e.allergies.includes(a)))
+    .filter(e => location.length === 0 || location.includes(e.campus))
+    .filter(e =>
+      e.title.toLowerCase().includes(search.toLowerCase()) ||
+      e.description.toLowerCase().includes(search.toLowerCase()) ||
+      e.location.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => (sort === "time" ? a.id - b.id : b.servingsLeft - a.servingsLeft));
 
-const filteredEvents = mockEvents
-.filter((e) => categoryFilter.length === 0 || categoryFilter.includes(e.category))
-.filter((e) => dietary.length === 0 || dietary.every(d => e.dietary.includes(d)))
-.filter((e) => allergy.length === 0 || allergy.every(a => !e.allergies.includes(a)))
-.filter((e) => location.length === 0 || location.includes(e.campus))
-.filter((e) => 
-    e.title.toLowerCase().includes(search.toLowerCase()) || 
-    e.description.toLowerCase().includes(search.toLowerCase()) || 
-    e.location.toLowerCase().includes(search.toLowerCase())
-  )
-.sort((a,b) => {
-  if (sort==="time") return a.id - b.id;
-  if (sort === "servings") return b.servingsLeft-a.servingsLeft;
-  return 0;
-});
-  
-  const favs = (id:number) => {
-    setFavorites((prev) => prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]);
-  };
+  const favs = (id: number) =>
+    setFavorites(prev => (prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]));
 
-  const reserve = (id:number) => {
-    setReserves((prev) => prev.includes(id) ? prev.filter(resy => resy !==id) : [...prev, id]);
-  };
-  
-  return(
+  const reserve = (id: number) =>
+    setReserves(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
+
+  return (
     <>
-    <ConfigProvider
-      theme={{
-        algorithm: theme.defaultAlgorithm,
-        token: {
-          colorPrimary: '#CC0000',
-          borderRadius: 12,
-          colorBgContainer: '#fff',
-        }
-      }}
-    >
-    <Space
-      size="large"
-      direction="vertical"
-      style={{width: '100%', padding: '24px 32px'}}>
-      <Space.Compact style={{width: '100%'}}>
-      <SearchBar
-        layout={layout}
-        setLayout={setLayout}
-        search={search}
-        setSearch={setSearch}
-      />
-      </Space.Compact>
+      <ConfigProvider
+        theme={{
+          algorithm: theme.defaultAlgorithm,
+          token: {
+            colorPrimary: "#CC0000",
+            borderRadius: 12,
+            colorBgContainer: "#fff"
+          }
+        }}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%", padding: "24px 32px" }}>
 
-      <Filters
-        layout={layout}
-        categories={categories}
-        categoryFilter={categoryFilter}
-        setCategoryFilter={setCategoryFilter}
-        dietary={dietary}
-        setDietary={setDietary}
-        dietaryOptions={dietaryOptions}
-        allergy={allergy}
-        setAllergy={setAllergy}
-        allergyOptions={allergyOptions}
-        location={location}
-        setLocation={setLocation}
-        locationOptions={locationOptions}
-        sort={sort}
-        setSort={setSort}
-        sortOptions={sortOptions}
-      />
+          {/* Header row (hamburger + search bar) */}
+          <Space style={{ width: "100%", justifyContent: "space-between" }}>
+            <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} />
+            <Space.Compact style={{ flex: 1, justifyContent: "flex-end" }}>
+              <SearchBar layout={layout} setLayout={setLayout} search={search} setSearch={setSearch} />
+            </Space.Compact>
+          </Space>
 
-        {layout === 'list' ? (
+          {/* Filters */}
+          <Filters
+            categories={categories}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            layout={layout}
+            sort={sort}
+            setSort={setSort}
+            sortOptions={sortOptions}
+            dietaryOptions={dietaryOptions}
+            dietary={dietary}
+            setDietary={setDietary}
+            allergyOptions={allergyOptions}
+            allergy={allergy}
+            setAllergy={setAllergy}
+            locationOptions={locationOptions}
+            location={location}
+            setLocation={setLocation}
+          />
+
+          {/* Event list or map */}
+          {layout === "list" ? (
             <EventList
-                filteredEvents={filteredEvents}
-                favorites={favorites}
-                favs={favs}
-                reserves={reserves}
-                reserve={reserve}
-                defaults={defaults}
+              filteredEvents={filteredEvents}
+              favorites={favorites}
+              favs={favs}
+              reserves={reserves}
+              reserve={reserve}
+              defaults={defaults}
             />
-        ) : ( 
-            <Map/>
-        )}
+          ) : (
+            <Map />
+          )}
         </Space>
-        </ConfigProvider>
 
+        {/* Sidebar Drawer */}
+        <Drawer title="Menu" placement="left" onClose={() => setDrawerOpen(false)} open={drawerOpen}>
+          <Menu
+            mode="inline"
+            items={[
+              { key: "account", icon: <UserOutlined />, label: "My Account", onClick: () => router.push("/account") },
+              { key: "bookmarks", icon: <BookOutlined />, label: "Bookmarks", onClick: () => router.push("/bookmarks") },
+              { key: "report", icon: <FlagOutlined />, label: "Report a Problem", onClick: () => router.push("/report") }
+            ]}
+          />
+        </Drawer>
 
-      <div style={{position: "fixed", bottom: "120px", right: "40px", zIndex: 2000}}>
-      <Tooltip title="Post a new event">
-        <Button
+      </ConfigProvider>
+
+      {/* Floating post button */}
+      <div style={{ position: "fixed", bottom: "120px", right: "40px", zIndex: 2000 }}>
+        <Tooltip title="Post a new event">
+          <Button
             type="primary"
             shape="circle"
             size="large"
-            icon={<PlusOutlined className="plus-icon"/>}
+            icon={<PlusOutlined className="plus-icon" />}
             className="floating-post-button"
             onClick={() => router.push("/post")}
-        />
+          />
         </Tooltip>
-        </div>
-        </>
-    );
-    }
+      </div>
+    </>
+  );
+}

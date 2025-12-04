@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
-import { Button, Tooltip } from "antd";
-import { HeartOutlined, HeartFilled } from "@ant-design/icons";
-import { createClient } from "@/lib/supabase/client";
-import { BookOutlined, BookFilled } from "@ant-design/icons";
 
+import { useEffect, useState } from "react";
+import { Button, Tooltip } from "antd";
+import { BookOutlined, BookFilled } from "@ant-design/icons";
+import { createClient } from "@/lib/supabase/client";
 
 type BookmarkButtonProps = {
   eventId: number;
@@ -14,8 +13,28 @@ type BookmarkButtonProps = {
 export default function BookmarkButton({ eventId, eventTitle }: BookmarkButtonProps) {
   const [bookmarked, setBookmarked] = useState(false);
 
+  const supabase = createClient();
+
+  // Load bookmark state on mount
+  useEffect(() => {
+    const loadBookmark = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("event_id", eventId)
+        .single();
+
+      setBookmarked(!!data);
+    };
+
+    loadBookmark();
+  }, [eventId]);
+
   const toggleBookmark = async () => {
-    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -25,10 +44,12 @@ export default function BookmarkButton({ eventId, eventTitle }: BookmarkButtonPr
 
     if (bookmarked) {
       // remove bookmark
-      await supabase.from("bookmarks")
+      await supabase
+        .from("bookmarks")
         .delete()
         .eq("user_id", user.id)
         .eq("event_id", eventId);
+
       setBookmarked(false);
     } else {
       // add bookmark
@@ -38,6 +59,7 @@ export default function BookmarkButton({ eventId, eventTitle }: BookmarkButtonPr
         event_id: eventId,
         event_title: eventTitle,
       });
+
       setBookmarked(true);
     }
   };
@@ -45,11 +67,16 @@ export default function BookmarkButton({ eventId, eventTitle }: BookmarkButtonPr
   return (
     <Tooltip title={bookmarked ? "Remove bookmark" : "Add bookmark"}>
       <Button
-    type="text"
-    icon={bookmarked ? <BookFilled style={{ color: "#CC0000" }} /> : <BookOutlined />}
-    onClick={toggleBookmark}
-    />
-
+        type="text"
+        icon={
+          bookmarked ? (
+            <BookFilled style={{ color: "#CC0000" }} />
+          ) : (
+            <BookOutlined />
+          )
+        }
+        onClick={toggleBookmark}
+      />
     </Tooltip>
   );
 }

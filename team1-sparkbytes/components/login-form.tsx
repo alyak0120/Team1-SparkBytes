@@ -63,7 +63,8 @@ export default function LoginForm() {
   setLoading(false);
 
   // Supabase automatically stores the session in cookies/localStorage
-  router.push("/"); // redirect to dashboard
+  router.refresh();
+  router.push("/event"); // redirect to dashboard
 };
 
 
