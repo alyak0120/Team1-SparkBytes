@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createClient() {
-  // IMPORTANT: cookies() is async in Next 16
+  //cookies() is async in RSC
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -10,17 +10,19 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
+        //reading cookies
         get(name: string) {
-          // cookieStore is now the resolved cookie object
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+        //not allowed in layouts/server components- make no-ops
+        set(_name: string, _value: string, _options: CookieOptions) {
+          //no-op in RSC context
         },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: "", ...options });
+        remove(_name: string, _options: CookieOptions) {
+          //no-op in RSC context
         },
       },
     }
   );
 }
+
