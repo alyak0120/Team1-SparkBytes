@@ -9,7 +9,11 @@ export default function Page() {
   return (
     <div className="flex min-h-svh w-full items-center justify-center">
       <SignUpForm
-        onSignUp={() => router.push("/")}   //fixed redirect
+        onSignUp={() => {
+          router.refresh();
+          router.push("/event");
+          }}
+ 
         onNavigate={(path) => router.push(`/auth/${path}`)}
       />
     </div>
