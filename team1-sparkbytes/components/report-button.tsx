@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button, Modal, Form, Input, message, Tooltip, Select } from "antd";
 import { FlagOutlined } from "@ant-design/icons";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 type ReportButtonProps = {
   eventId: number;
@@ -12,22 +14,49 @@ type ReportButtonProps = {
 
 export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportButtonProps) {
   const [open, setOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const supabase = createClient();
+  const router = useRouter();
 
   const submitReport = async (values: any) => {
     setLoading(true);
 
-    // TODO: send to Supabase or API route
-    await new Promise((res) => setTimeout(res, 800));
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    console.log("Report submitted:", {
-      eventId,
-      ...values,
+    if (!user) {
+      message.error("You must be logged in to report events.");
+      setLoading(false);
+      return;
+    }
+
+    const { reason, details } = values;
+
+    const { error } = await supabase.from("reports").insert({
+      user_id: user.id,
+      user_email: user.email,        // ⭐ ADDED THIS
+      event_id: eventId,
+      event_title: eventTitle,
+      report_type: reason,
+      comment: details,
     });
 
-    message.success("Report submitted.");
-    setLoading(false);
+    if (error) {
+      console.error(error);
+      message.error("Failed to submit report.");
+      setLoading(false);
+      return;
+    }
+
+    // Close form modal
     setOpen(false);
+    setLoading(false);
+
+    // Show success modal
+    setSuccessOpen(true);
   };
 
   const button = (
@@ -45,6 +74,7 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
     <>
       <Tooltip title="Report">{button}</Tooltip>
 
+      {/* FORM MODAL */}
       <Modal
         title={`Report Event: ${eventTitle}`}
         open={open}
@@ -52,22 +82,19 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
         footer={null}
       >
         <Form layout="vertical" onFinish={submitReport}>
-          {/* NEW dropdown field */}
           <Form.Item
             label="Reason for Report"
             name="reason"
             rules={[{ required: true, message: "Please select a reason." }]}
           >
             <Select placeholder="Select a reason">
-              <Select.Option value="inaccurate">Inaccurate Information</Select.Option>
+              <Select.Option value="inaccurate_info">Inaccurate Information</Select.Option>
               <Select.Option value="food_safety">Food Safety Issue</Select.Option>
-              <Select.Option value="no_servings">No Servings Left</Select.Option>
-              <Select.Option value="inappropriate">Inappropriate Content</Select.Option>
+              <Select.Option value="already_gone">No Servings Left</Select.Option>
               <Select.Option value="other">Other</Select.Option>
             </Select>
           </Form.Item>
 
-          {/* Description box */}
           <Form.Item
             label="Describe the Issue"
             name="details"
@@ -76,16 +103,32 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
             <Input.TextArea rows={4} placeholder="Tell us what happened..." />
           </Form.Item>
 
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            style={{ marginTop: 12 }}
-            block
-          >
+          <Button type="primary" htmlType="submit" loading={loading} block>
             Submit Report
           </Button>
         </Form>
+      </Modal>
+
+      {/* SUCCESS MODAL */}
+      <Modal
+        title="Report Submitted"
+        open={successOpen}
+        footer={null}
+        onCancel={() => setSuccessOpen(false)}
+      >
+        <p>Your report has been successfully submitted.</p>
+
+        <Button
+          type="primary"
+          block
+          style={{ marginTop: 16 }}
+          onClick={() => {
+            setSuccessOpen(false);
+            router.push("/event"); // return to dashboard
+          }}
+        >
+          Return to Dashboard
+        </Button>
       </Modal>
     </>
   );
