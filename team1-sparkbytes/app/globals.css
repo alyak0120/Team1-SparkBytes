@@ -71,11 +71,11 @@
 
 .floating-post-button {
   position: fixed;
-  bottom: 32px;
+  bottom: 60px;
   right: 32px;
   border-radius: 50%;
-  background-color: #cc0000;
-  border: none;
+  background-color: white;
+  border: red 2px solid;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   display:flex;
   justify-content: center;
@@ -98,4 +98,5 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: red;
 }

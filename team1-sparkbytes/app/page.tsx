@@ -20,7 +20,7 @@ const defaults: Record<string, string> = {
   Other: "/images/default.jpg"
 };
 
-const mockEvents = [
+const initialMockEvents = [
   {
     id: 1,
     title: "Pizza Night",
@@ -90,10 +90,12 @@ export default function Home() {
     const router = useRouter();
 
   useEffect(() => {
+    router.refresh();
     // if (localStorage.getItem("loggedIn") !== "true") {
     //   router.push("/auth/login");
     // }
   }, []);
+  const [events, setEvents] = useState(initialMockEvents);
   const [filter, setFilter] = useState("All");
   const [favorites, setFavorites] = useState<number[]>([]);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
@@ -106,7 +108,7 @@ export default function Home() {
 
 
 
-const filteredEvents = mockEvents.filter((e) => filter === "All" || e.category === filter).filter((e) => dietary.length === 0 ||
+const filteredEvents = events.filter((e) => filter === "All" || e.category === filter).filter((e) => dietary.length === 0 ||
 dietary.some(dopts => e.dietary.includes(dopts))).filter((e) => allergy.length === 0 ||
 allergy.every(aopts => !e.allergies.includes(aopts))).filter((e) => location.length === 0 ||
 location.includes(e.campus)).sort((a,b) => {

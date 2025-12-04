@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,6 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import { LogoutButton } from "./logout-button";
 import { Button } from "./ui/button";
 import Link from "next/link";
+=======
+import Link from "next/link";
+import { Button } from "./ui/button";
+import { createClient } from "@/lib/supabase/server";
+import { LogoutButton } from "./logout-button";
+import { Text } from "lucide-react";
+>>>>>>> main
 
 export function AuthButton() {
   const supabase = createClient();
@@ -46,5 +54,18 @@ export function AuthButton() {
       Hey, {user.email}!
       <LogoutButton />
     </div>
+<<<<<<< HEAD
+=======
+  ) : (
+    <div className="flex gap-2">
+      
+      <Button asChild size="sm" variant={"outline"}>
+        <Link href="/auth/login">Sign in</Link>
+      </Button>
+      <Button asChild size="sm" variant={"default"}>
+        <Link href="/auth/sign-up">Sign up</Link>
+      </Button>
+    </div>
+>>>>>>> main
   );
 }
