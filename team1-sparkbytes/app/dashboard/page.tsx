@@ -1,18 +1,17 @@
 "use client";
-import { Button, Layout, Menu, Flex, Divider, Image, ConfigProvider, Splitter, Input, Switch} from "antd";
+import { useEffect, useRef, useState } from "react";
+
+import { Button, Layout, Menu, Flex, Divider, Image, ConfigProvider, Splitter, Input, Switch, Tag} from "antd";
+import { Header, Content, Footer } from "antd/lib/layout/layout";
 
 import Text from 'antd/lib/typography/Text';
 import Title from "antd/lib/typography/Title";
 import Sider from "antd/lib/layout/Sider";
-import Panel from "antd/lib/splitter/Panel";
 import Link from "antd/lib/typography/Link";
-
-import { useEffect, useRef, useState } from "react";
-
-import { Header, Content, Footer } from "antd/lib/layout/layout";
+import Panel from "antd/lib/splitter/Panel";
 
 import profile_img from "../../public/images/profile_img.png";
-import Panel from "antd/lib/splitter/Panel";
+import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient(); // serves as a window to the DB
 // console.log(supabase);
@@ -44,10 +43,55 @@ const sampleAccount = {
   preferences: {},
 }
 
+async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error('Error fetching user:', error.message);
+    return null;
+  }
+
+  if (user) {
+    console.log('Currently logged in user:', user);
+    return user;
+  } else {
+    console.log('No user is currently logged in.');
+    return null;
+  }
+}
+
 const Home = () => {
   const notificationRef = useRef(null);
 
   const [sampleData, setSampleData] = useState({});
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [BUID, setBUID] = useState("");
+
+  async function getCurrentProfile() {
+  const user = await getCurrentUser();
+  if (user != null) {
+    const {data, error} = await supabase
+    .from('profiles').select('*').eq('id', user.id);
+
+    console.log(data);
+
+    if (error) {
+      console.log(error.message);
+    } else {
+      
+      if (data[0]) {
+        setName(data[0].name);
+        setEmail(data[0].email);
+        setBUID(data[0].bu_id);
+        console.log(data[0]);
+      }
+
+    }
+  } else {
+    console.log("No current user! Login in first.");
+  }
+}
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,7 +109,6 @@ const Home = () => {
   // <div style={{color: "white"}}>
     // <div style={{padding: 0, margin: 0}}>
     <Flex gap="middle" wrap>
-      <Layout>
         <Layout style={{background: "#212121", color: "#E0E0E0", flexDirection: 'initial', height:"100vh"}}>
           <Sider style={{background: "#212121", color: "white"}}>
             <ConfigProvider 
@@ -95,21 +138,49 @@ const Home = () => {
             <Splitter>
               <Panel resizable={false} style={{color: "white", textAlign: "center"}} size={310}>
                 <Image style={{padding: 10, border: "solid 1px #212121", borderRadius: 200,}} width={300} src={profile_img.src} alt="text" />
-                <Title style={{color: "#E0E0E0", margin: 0, padding: 4}} level={2}>Name Placeholder</Title>
-                <Text style={{color: "#E0E0E0", margin: 0, padding: 0}}>(BU Email)</Text>
+                <Title style={{color: "#E0E0E0", margin: 0, padding: 4}} level={2}>{name}</Title>
+                <Text style={{color: "#E0E0E0", margin: 0, padding: 0}}>({email})</Text>
                 <br/> <Button onClick={() => notificationRef.current?.scrollIntoView()}>Scroll to Notifications</Button>
+                <Tag
+                style={{cursor: "pointer",
+                  fontWeight:500,
+                  padding: '4px 10px',
+                  borderRadius: 16,
+                }}
+                onClick={async () => {
+                  const { data: {user}, error} = await supabase.auth.getUser();
+                  if (error) {
+                    console.log('Error signing out:', error.message);
+                  }
+      
+                  if (user) {
+                    console.log('Currently logged in user:', user);
+                  } else {
+                    console.log("No currently logged in user.");
+                  }
+                }}
+                >(DEBUG) Check Current User</Tag>
+                
+                <Tag
+                style={{cursor: "pointer",
+                  fontWeight:500,
+                  padding: '4px 10px',
+                  borderRadius: 16,
+                }}
+                onClick={getCurrentProfile}
+                >(DEBUG) Check Current Profile</Tag>
               </Panel>
               <Panel resizable={false} style={{background: "#212121"}}>
                 <Title style={{color: "#E0E0E0", margin: 0, padding: 8}} level={2}>Profile </Title>
                 <div style={{paddingLeft: 10}}>
                   <Text style={{color: "#E0E0E0", fontSize: 20}}>Full Name:</Text> <br/>
-                  <Input style={{ width: 200}} placeholder="First Name, Last Name" value={`${sampleAccount.firstName} ${sampleAccount.lastName}`} readOnly/> <br/>
+                  <Input style={{ width: 200}} placeholder="First Name, Last Name" value={name} readOnly/> <br/>
                     
                   <Text style={{color: "#E0E0E0", fontSize: 20}}>Email:</Text> <br/>
-                  <Input style={{ width: 200}} placeholder="BU Email" value={sampleAccount.email} readOnly/> <br/>
+                  <Input style={{ width: 200}} placeholder="BU Email" value={email} readOnly/> <br/>
                   
                   <Text style={{color: "#E0E0E0", fontSize: 20}}>BU ID:</Text> <br/>
-                  <Input style={{ width: 200}} placeholder="BU ID" value={sampleAccount.BUID} readOnly/> <br/>
+                  <Input style={{ width: 200}} placeholder="BU ID" value={BUID} readOnly/> <br/>
                 </div>
 
                 <Divider style={{background: "#E0E0E0", marginBottom: 0}} size="large" type="horizontal"/>
@@ -156,12 +227,8 @@ const Home = () => {
           </Content>
           
           {/* <Divider style={{background: "white"}} type="vertical"/> */}
-        
-        </Layout>
-          <Footer style={{background: "#212121", color: "#E0E0E0", zIndex: 10}}>Here&apos;s a footer</Footer>
         </Layout>
     </Flex>
-    // </div>
 )};
 
 export default Home;

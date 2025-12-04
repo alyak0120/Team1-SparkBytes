@@ -90,6 +90,7 @@ export default function Home() {
     const router = useRouter();
 
   useEffect(() => {
+    router.refresh();
     // if (localStorage.getItem("loggedIn") !== "true") {
     //   router.push("/auth/login");
     // }
