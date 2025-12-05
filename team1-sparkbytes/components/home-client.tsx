@@ -204,7 +204,6 @@ export default function Home() {
       <div style={{ position: "fixed", bottom: "120px", right: "40px", zIndex: 2000 }}>
         <Tooltip title="Post a new event">
           <Button
-            type="primary"
             shape="circle"
             size="large"
             icon={<PlusOutlined className="plus-icon" />}
