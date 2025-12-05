@@ -81,17 +81,33 @@ const handleSubmit = async () => {
     return;
   }
 
+  // Try sending welcome email (do not block sign-up if it fails)
+  try {
+    await fetch("/api/email/welcome", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        name: formData.name,
+      }),
+    });
+  } catch (err) {
+    console.error("Failed to call welcome email endpoint:", err);
+    // but don't show an error to the user here
+  }
+
   // If email confirmations are enabled in Supabase, user must check inbox
   if (data.user && !data.session) {
     message.success("Account created! Please check your email to confirm.");
   } else {
     message.success("Account created successfully!");
-    onSignUp(); // navigate to login or dashboard
+    onSignUp(); // navigate to dashboard or login
   }
 
   setLoading(false);
 };
-
 
   
   // UI
