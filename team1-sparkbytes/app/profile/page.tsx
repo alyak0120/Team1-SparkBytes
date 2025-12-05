@@ -2,23 +2,24 @@
 /* profile page server component */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import NotificationSettings from "@/components/notification-settings";
 
 export default async function ProfilePage() {
-  //create Supabase server client
+  // create Supabase server client
   const supabase = await createClient();
 
-  //get current user from Supabase Auth (accounts table)
+  // get current user from Supabase Auth (accounts table)
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
 
-  //if not logged in or there was an auth error → redirect to login
+  // if not logged in or there was an auth error → redirect to login
   if (userError || !user) {
     redirect("/auth/login");
   }
 
-  //fetch user profile from the "profiles" table using the auth user id
+  // fetch user profile from the "profiles" table using the auth user id
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
@@ -29,9 +30,9 @@ export default async function ProfilePage() {
     console.error("Error loading profile:", profileError);
   }
 
-  //render data
+  // render data
   return (
-    <div className="flex-1 w-full max-w-2xl mx-auto py-10 px-4 space-y-6">
+    <div className="flex-1 w-full max-w-2xl mx-auto py-10 px-4 space-y-8">
       <h1 className="text-3xl font-semibold">Your Profile</h1>
 
       <div className="space-y-2 text-sm">
@@ -57,6 +58,16 @@ export default async function ProfilePage() {
             : "No preferences set"}
         </p>
       </div>
+
+      {/* Notification settings */}
+      <section className="border rounded-xl p-4 bg-white shadow-sm">
+        <h2 className="text-lg font-medium mb-2">Notifications</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Control when SparkBytes emails you about events and updates.
+        </p>
+
+        <NotificationSettings />
+      </section>
     </div>
   );
 }
