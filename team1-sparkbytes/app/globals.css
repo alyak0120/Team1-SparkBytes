@@ -74,9 +74,9 @@
   bottom: 60px;
   right: 32px;
   border-radius: 50%;
-  background-color: white;
-  border: red 2px solid;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background-color: white !important;
+  border: red 2px solid !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
   display:flex;
   justify-content: center;
   align-items:center;
@@ -84,12 +84,18 @@
   z-index: 1000;
   padding:0;
   line-height:1;
+  outline: none !important;
+  color: red !important;
 }
 
-.floating-post-button:hover{
-  transform: scale(1,1);
-  box-shadow: 0 6px 16px rgba(204, 0, 0, 0.4);
-  background-color: #e60000;
+.floating-post-button:hover,
+.floating-post-button:focus,
+.floating-post-button:active {
+  transform: scale(1,1) !important;
+  box-shadow: 0 6px 16px rgba(204, 0, 0, 0.4) !important;
+  background-color: #e60000 !important;
+  border-color: red !important;
+  outline: none !important;
 }
 
 .plus-icon{
@@ -99,4 +105,11 @@
   align-items: center;
   justify-content: center;
   color: red;
+  transition: color 0.25s ease;
+}
+
+.floating-post-button:hover .plus-icon,
+.floating-post-button:focus .plus-icon,
+.floating-post-button:active .plus-icon {
+  color: white;
 }
