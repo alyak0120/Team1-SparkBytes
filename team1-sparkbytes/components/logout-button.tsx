@@ -1,8 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -10,17 +10,17 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.refresh(); // refresh layout so AuthButton updates
-    router.push("/auth/login"); // redirect to sign-in page
+    router.refresh();          // refresh layout so AuthButton updates
+    router.push("/auth/login"); // go back to login page
   };
 
-<<<<<<< HEAD
   return (
-    <Button onClick={handleLogout}>
+    <Button
+      size="sm"
+      style={{ backgroundColor: "#CC0000", color: "white" }}
+      onClick={handleLogout}
+    >
       Logout
     </Button>
   );
-=======
-  return <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}} onClick={logout}>Logout</Button>;
->>>>>>> main
 }
