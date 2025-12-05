@@ -1,5 +1,6 @@
 "use client";
-import {Form, Input, Button, Select, Card, Typography, DatePicker, TimePicker, message} from 'antd';
+import {Form, Input, Button, Select, Card, Typography, DatePicker, TimePicker, message, Upload} from 'antd';
+import {UploadOutlined} from '@ant-design/icons';
 import {useState} from 'react';
 import { useRouter } from "next/navigation";
 import dayjs from 'dayjs';
@@ -80,9 +81,19 @@ export default function NewEvent() {
                                 {label: 'Pizza', value: 'Pizza'},
                                 {label: 'Breakfast', value: 'Breakfast'},
                                 {label: 'Dessert', value: 'Dessert'},
-                                {label: 'Otther', value: 'Other'}
+                                {label: 'Other', value: 'Other'},
+                                {label: 'Mexican', value: 'Mexican'},
+                                {label: 'Asian', value: 'Asian'},
                             ]}
                         />
+                    </Form.Item>
+                    
+                    <Form.Item
+                        label="Number of Servings"
+                        name="servings"
+                        rules={[{required: true, message: 'Enter number of servings'}]}
+                    >
+                        <Input type="number" placeholder="e.g. 10"/>
                     </Form.Item>
 
                     <Form.Item
@@ -91,6 +102,28 @@ export default function NewEvent() {
                         rules={[{required: true, message: 'Add a short description'}]}
                     >
                         <Input.TextArea rows={3} placeholder="Describe your event..."/>
+                    </Form.Item>
+                    
+                    <Form.Item
+                        label="Event Image (optional)"
+                        name="image"
+                        valuePropName="fileList"
+                        getValueFromEvent={(e) => {
+                            if (Array.isArray(e)) {
+                                return e;
+                            } 
+                            return e?.fileList;
+                        }}
+                    >
+                    
+                    <Upload
+                        listType="picture"
+                        maxCount={1}
+                        beforeUpload={() => false}
+                        accept="image/*"
+                    >
+                        <Button icon={<UploadOutlined />}>Click to upload</Button>
+                    </Upload>
                     </Form.Item>
 
                     <Form.Item
@@ -152,7 +185,7 @@ export default function NewEvent() {
                     </Form.Item>
                     </div>
 
-                    <div>
+                    <div style={{display: "flex", gap: "16px"}}>
                         <Button
                             onClick={() => router.push('/')}
                             disabled={loading}
@@ -163,6 +196,7 @@ export default function NewEvent() {
                             type="primary"
                             loading={loading}
                             htmlType="submit"
+                            style={{backgroundColor: "#CC0000", borderColor: "#CC0000"}}
                         >
                             Post Event
                         </Button>

@@ -41,16 +41,26 @@ export default function EventCard({
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        minHeight: 380,
+        height: 450,
       }}
     >
       {/* Card Body */}
-      <div style={{ padding: "12px 16px" }}>
+      <div style={{ padding: "12px 16px", flex: 1, display: "flex",flexDirection: "column"}}>
         <Typography.Title level={5} style={{ marginBottom: 4 }}>
           {event.title}
         </Typography.Title>
 
-        <p>{event.description}</p>
+        <p
+          style={{
+            fontSize: 14,
+            marginBottom: 8,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+          }}
+          >{event.description}</p>
 
         <Space direction="vertical" size={2}>
           <Typography.Text>
