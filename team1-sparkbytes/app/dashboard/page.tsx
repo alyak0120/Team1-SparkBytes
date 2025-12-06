@@ -13,6 +13,9 @@ import Panel from "antd/lib/splitter/Panel";
 import profile_img from "../../public/images/profile_img.png";
 import { createClient } from "@/lib/supabase/client";
 
+import NotificationSettings from "@/components/notification-settings";
+
+
 const supabase = createClient(); // serves as a window to the DB
 // console.log(supabase);
 
