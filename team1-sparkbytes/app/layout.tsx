@@ -45,12 +45,12 @@ export default function RootLayout({
       <header className="w-full border-b">
         <div className="flex">
           <div className="max-w-6xl py-3 px-4 flex gap-2 items-center">
-            <Button size="sm"><Link href="/event">Events</Link></Button>
-            <Button size="sm"><Link href="/dashboard">Your Account</Link></Button>
-            <Button size="sm">About</Button>
+            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/event">Events</Link></Button>
+            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/dashboard">Your Account</Link></Button>
+            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}>About</Button>
           </div>
-          <div className="ml-auto max-w-6xl py-3 px-4 flex items-center justify-between">
-            <div className="font-semibold">SparkBytes</div>
+          <div className="ml-auto max-w-6xl py-3 px-4 flex items-center gap-4">
+            <div className="font-semibold">Spark!Bytes</div>
             
             <AuthButton /> {/* this is the new button */}
           </div>

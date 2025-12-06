@@ -127,15 +127,12 @@ export default function Home() {
       >
         <Space direction="vertical" size="large" style={{ width: "100%", padding: "24px 32px" }}>
 
-          {/* Header row (hamburger + search bar) */}
-          <Space style={{ width: "100%", justifyContent: "space-between" }}>
-            <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} />
-            <Space.Compact style={{ flex: 1, justifyContent: "flex-end" }}>
-              <SearchBar layout={layout} setLayout={setLayout} search={search} setSearch={setSearch} />
-            </Space.Compact>
-          </Space>
 
-          {/* Filters */}
+          {/* Header row (hamburger + search bar) */}
+          <Space style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Space size="small">
+            <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} />
+                    {/* Filters */}
           <Filters
             categories={categories}
             categoryFilter={categoryFilter}
@@ -154,6 +151,26 @@ export default function Home() {
             location={location}
             setLocation={setLocation}
           />
+          </Space>
+
+            <Space size="small">
+
+            <SearchBar layout={layout} setLayout={setLayout} search={search} setSearch={setSearch} />
+
+            <Button
+                type={sort === "servings" ? "primary" : "default"}
+                onClick={() => setSort("servings")}
+            >
+                Servings Left
+            </Button>
+            <Button
+                type={sort === "time" ? "primary" : "default"}
+                onClick={() => setSort("time")}
+            >
+                Newest
+            </Button>
+          </Space>
+          </Space>
 
           {/* Event list or map */}
           {layout === "list" ? (
@@ -181,7 +198,6 @@ export default function Home() {
             ]}
           />
         </Drawer>
-
       </ConfigProvider>
 
       {/* Floating post button */}

@@ -42,23 +42,6 @@ export default function Filters({categoryFilter, setCategoryFilter, categories, 
     >
         Filters
     </Button>
-
-    {layout === "list" && (
-        <Space style={{marginLeft: 16}}>
-            <Button
-                type={sort === "servings" ? "primary" : "default"}
-                onClick={() => setSort("servings")}
-            >
-                Servings Left
-            </Button>
-            <Button
-                type={sort === "time" ? "primary" : "default"}
-                onClick={() => setSort("time")}
-            >
-                Newest
-            </Button>
-        </Space>
-    )}
     <Drawer
         title="Filters"
         placement="left"

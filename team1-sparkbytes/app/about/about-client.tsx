@@ -20,6 +20,7 @@ export default function AboutClient() {
         <button
           onClick={() => router.push("/auth/sign-up")}
           className="border border-red-600 text-red-700 px-6 py-2 rounded-full font-semibold hover:bg-red-50 transition"
+          style={{backgroundColor: "#CC0000", color: "white"}}
         >
           Sign Up
         </button>
