@@ -54,10 +54,8 @@ yarn dev
 ### Frontend
 + Next.js 14
 + React
-+ TypeScript
 + Tailwind CSS
 + Ant Design
-+ Backend
 
 ### Backend
 + Supabase
