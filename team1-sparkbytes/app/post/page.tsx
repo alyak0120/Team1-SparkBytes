@@ -29,10 +29,10 @@ const allergyOptions = [
 ];
 
 const campusOptions = [
-  { label: "West", value: "west" },
-  { label: "East", value: "east" },
-  { label: "Central", value: "central" },
-  { label: "Fenway", value: "fenway" },
+  { label: "West", value: "West" },
+  { label: "East", value: "East" },
+  { label: "Central", value: "Central" },
+  { label: "Fenway", value: "Fenway" },
 ];
 
 export default function NewEvent() {
@@ -83,6 +83,8 @@ export default function NewEvent() {
         .upload(fileName, file);
 
     if (uploadError) {
+        console.log("Uploading to bucket: event_images", fileName);
+        console.error(uploadError);
         console.error("Supabase storage error:", uploadError);
         msgApi.error("Failed to upload image");
     } else {
@@ -181,7 +183,7 @@ export default function NewEvent() {
                   const num = Number(value);
                   if (!Number.isInteger(num)) return Promise.reject("Capacity must be an integer");
                   if (num <= 0) return Promise.reject("Capacity must be greater than 0");
-                  if (num > 10000) return Promise.reject("Capacity is too large");
+                  if (num > 5000) return Promise.reject("Capacity is too large");
                   return Promise.resolve();
                 },
               },
