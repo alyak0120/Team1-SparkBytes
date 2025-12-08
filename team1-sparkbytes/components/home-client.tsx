@@ -272,7 +272,7 @@ export default function Home() {
           <Menu
             mode="inline"
             items={[
-              { key: "account", icon: <UserOutlined />, label: "My Account", onClick: () => router.push("/account") },
+              { key: "account", icon: <UserOutlined />, label: "My Account", onClick: () => router.push("/dashboard") },
               { key: "bookmarks", icon: <BookOutlined />, label: "Bookmarks", onClick: () => router.push("/bookmarks") },
               { key: "report", icon: <FlagOutlined />, label: "Report a Problem", onClick: () => router.push("/report") }
             ]}
