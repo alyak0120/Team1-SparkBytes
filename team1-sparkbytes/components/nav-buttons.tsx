@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { LogoutButton } from "./logout-button";
 
-export function AuthButton() {
+export function NavButtons() {
   const [user, setUser] = useState<any>(null);
   const supabase = createClient();
 
@@ -29,14 +29,9 @@ export function AuthButton() {
   // -----------------------------
   if (!user) {
     return (
-      <div className="flex gap-2">
-        <Button asChild size="sm" variant="outline">
-          <Link href="/auth/login">Sign in</Link>
-        </Button>
-        <Button asChild size="sm" variant="default" style={{backgroundColor: "#CC0000", color: "white"}}>
-          <Link href="/auth/sign-up">Sign up</Link>
-        </Button>
-      </div>
+        <div className="max-w-6xl py-3 px-4 flex gap-2 items-center">
+            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/">About</Link></Button>
+        </div>
     );
   }
 
@@ -44,9 +39,10 @@ export function AuthButton() {
   // Logged in
   // -----------------------------
   return (
-    <div style={{color: "black"}} className="flex items-center gap-4">
-      Hey, {user.email}!
-      <LogoutButton />
+    <div className="max-w-6xl py-3 px-4 flex gap-2 items-center">
+        <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/event">Events</Link></Button>
+        <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/dashboard">Your Account</Link></Button>
+        <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/">About</Link></Button>
     </div>
   );
 }

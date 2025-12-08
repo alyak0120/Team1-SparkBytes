@@ -168,6 +168,38 @@ export default function Home() {
   const reserve = (id: number) =>
     setReserves(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
 
+  useEffect(() => {
+    const supabase = createClient();
+    console.log("Fetching reservations!");
+    const fetchReservations = async () => {
+      const userReserves = [];
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error fetching user:', error.message);
+        return null;
+      }
+
+      if (user) {
+        console.log('Fetching reservations with user:', user);
+        const { data, error } = await supabase
+        .from('reservations').select('event_id').eq('user_id', user.id);
+        if (error) {
+            console.error("Error fetching user's reservations: ", error.message);
+        } else {
+          for (let i = 0; i < data.length; i++) {
+            userReserves.push(data[i].event_id);
+          }
+          setReserves(userReserves);
+          console.log(userReserves);
+        }
+      } else {
+        console.log('No user is currently logged in.');
+        return null;
+      }
+    }
+  fetchReservations();
+  }, []);
+
   return (
     <>
       <ConfigProvider
