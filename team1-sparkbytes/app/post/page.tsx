@@ -1,208 +1,227 @@
 "use client";
-import {Form, Input, Button, Select, Card, Typography, DatePicker, TimePicker, message, Upload} from 'antd';
-import {UploadOutlined} from '@ant-design/icons';
-import {useState} from 'react';
-import { useRouter } from "next/navigation";
-import dayjs from 'dayjs';
 
+import { Form, Input, Select, Button, Card, Typography, DatePicker, TimePicker, message, Upload } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+);
+
+const dietaryOptions = [
+  { label: "Vegan", value: "Vegan" },
+  { label: "Vegetarian", value: "Vegetarian" },
+  { label: "Halal", value: "Halal" },
+  { label: "Kosher", value: "Kosher" },
+  { label: "Gluten-Free", value: "Gluten-Free" },
+  { label: "Pescatarian", value: "Pescatarian" },
+];
+
+const allergyOptions = [
+  { label: "Dairy-Free", value: "Dairy-Free" },
+  { label: "Nut-Free", value: "Nut-Free" },
+  { label: "Soy-Free", value: "Soy-Free" },
+  { label: "Shellfish-Free", value: "Shellfish-Free" },
+];
+
+const campusOptions = [
+  { label: "West", value: "West" },
+  { label: "East", value: "East" },
+  { label: "Central", value: "Central" },
+  { label: "Fenway", value: "Fenway" },
+];
 
 export default function NewEvent() {
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [msgApi, contextHolder] = message.useMessage();
 
-    const handleFinish = async (values: any) => {
-        setLoading(true);
-        try {
-            // Convert Dayjs objects to an ISO datetime string
-            const date = values.date && values.date.format('YYYY-MM-DD');
-            const time = values.time && values.time.format('HH:mm');
-            const starts_at = date && time ? dayjs(`${date} ${time}`).toISOString() : null;
+ const handleFinish = async (values: any) => {
+  setLoading(true);
 
-            const payload: any = {
-                title: values.title,
-                category: values.category,
-                description: values.description,
-                area: values.area,
-                address: values.address,
-                building: values.building || null,
-                room: values.room || null,
-                starts_at,
-            };
+  try {
+    const { date, start_time, end_time } = values;
 
-            // POST to the server route which uses a server-side Supabase admin client.
-            const res = await fetch('/api/events', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const result = await res.json();
-
-            if (!res.ok) {
-                console.error('Server insert error', result);
-                message.error('Failed to post event. Please try again.');
-            } else {
-                message.success('Event posted successfully');
-                router.push('/');
-            }
-        } catch (err) {
-            console.error(err);
-            message.error('An unexpected error occurred');
-        } finally {
-            setLoading(false);
-        }
+    if (!date || !start_time || !end_time) {
+      msgApi.error("Please select date and times");
+      setLoading(false);
+      return;
     }
 
-    const addressRegex = /^[0-9A-Za-z\s.,'-]+,\s*[A-Za-z\s]+,\s*[A-Za-z]{2}\s*\d{5}(-\d{4})?$/;
+    // Combine date and time into ISO strings
+    const startDateTime = date
+      .hour(start_time.hour())
+      .minute(start_time.minute())
+      .second(0);
 
-    return (
-        <div>
-            <Card>
-                <Typography.Title level={3}>
-                    Post a New Event
-                </Typography.Title>
-                <Form layout="vertical" onFinish={handleFinish}>
-                    <Form.Item
-                        label="Event Title"
-                        name="title"
-                        rules={[{required: true, message: 'Enter a title'}]}
-                    >
-                        <Input placeholder="Enter a title"/>
-                    </Form.Item>  
+    const endDateTime = date
+      .hour(end_time.hour())
+      .minute(end_time.minute())
+      .second(0);
 
-                    <Form.Item
-                        label="Category"
-                        name="category"
-                        rules={[{required: true, message: "Select a category"}]}              
-                    >
-                        <Select
-                            placeholder="Select a Category"
-                            options={[
-                                {label: 'Pizza', value: 'Pizza'},
-                                {label: 'Breakfast', value: 'Breakfast'},
-                                {label: 'Dessert', value: 'Dessert'},
-                                {label: 'Other', value: 'Other'},
-                                {label: 'Mexican', value: 'Mexican'},
-                                {label: 'Asian', value: 'Asian'},
-                            ]}
-                        />
-                    </Form.Item>
-                    
-                    <Form.Item
-                        label="Number of Servings"
-                        name="servings"
-                        rules={[{required: true, message: 'Enter number of servings'}]}
-                    >
-                        <Input type="number" placeholder="e.g. 10"/>
-                    </Form.Item>
+    if (!startDateTime.isValid() || !endDateTime.isValid()) {
+      msgApi.error("Invalid date/time");
+      setLoading(false);
+      return;
+    }
 
-                    <Form.Item
-                        label="Description"
-                        name="description"
-                        rules={[{required: true, message: 'Add a short description'}]}
-                    >
-                        <Input.TextArea rows={3} placeholder="Describe your event..."/>
-                    </Form.Item>
-                    
-                    <Form.Item
-                        label="Event Image (optional)"
-                        name="image"
-                        valuePropName="fileList"
-                        getValueFromEvent={(e) => {
-                            if (Array.isArray(e)) {
-                                return e;
-                            } 
-                            return e?.fileList;
-                        }}
-                    >
-                    
-                    <Upload
-                        listType="picture"
-                        maxCount={1}
-                        beforeUpload={() => false}
-                        accept="image/*"
-                    >
-                        <Button icon={<UploadOutlined />}>Click to upload</Button>
-                    </Upload>
-                    </Form.Item>
+    // -----------------------------
+    // 1. Upload image to Supabase Storage (if selected)
+    // -----------------------------
+    let image_url: string | null = null;
+    const file = values.image?.[0]?.originFileObj;
+    if (file) {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `events/${Date.now()}.${fileExt}`;
 
-                    <Form.Item
-                        label="Area of campus"
-                        name="area"
-                        rules={[{required:true, message: "Select an area of campus"}]}
-                    >
-                        <Select
-                            placeholder="Select an area"
-                            options={[
-                                {label: "East Campus", value: "East Campus"},
-                                {label: "West Campus", value: "West Campus"},
-                                {label: "South Campus", value: "South Campus"},
-                                {label: "Central Campus", value: "Central Campus"},
-                                {label: "Fenway Campus", value: "Fenway Campus"},
-                                {label: "Medical Campus", value: "Medical Campus"}
-                            ]}
-                        />
-                    </Form.Item>
+    const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("event-images")
+        .upload(fileName, file);
 
-                    <Form.Item
-                        label="Street Address, City, State, Zip Code"
-                        name="address"
-                        rules={[{required: true, message: "Enter a full address"},
-                            {pattern: addressRegex, message: "Enter a valid format: 700 Commonwealth Ave, Boston, MA 02215"}
-                        ]}
-                    >
-                        <Input placeholder="e.g. 700 Commonwealth Ave, Boston, MA 02215"/>
-                    </Form.Item>
+    if (uploadError) {
+        console.log("Uploading to bucket: event_images", fileName);
+        console.error(uploadError);
+        console.error("Supabase storage error:", uploadError);
+        msgApi.error("Failed to upload image");
+    } else {
+        const publicData = supabase.storage.from("event-images").getPublicUrl(fileName);
+        image_url = publicData.data.publicUrl;
+    }
+    }
 
-                    <Form.Item
-                        label="Building Name (optional)"
-                        name="building">
-                        <Input placeholder="e.g. Warren Towers"/>
-                    </Form.Item>
+    // -----------------------------
+    // 2. Build payload for API
+    // -----------------------------
+    const payload = {
+      title: values.title,
+      description: values.description,
+      location: values.location,
+      campus: values.campus,
+      address: values.address || null,
+      capacity: Number(values.capacity),
+      start_time: startDateTime.toISOString(),
+      end_time: endDateTime.toISOString(),
+      dietary_tags: values.dietary_tags || [],
+      allergy_tags: values.allergy_tags || [],
+      image_url, // <-- link to Supabase image
+    };
 
-                    <Form.Item label="Room Number (optional)" name="room">
-                        <Input placeholder="e.g. 511, B12, 201"/>
-                    </Form.Item>
+    console.log("Payload:", payload);
 
-                    <div>
-                    <Form.Item
-                        label="Date"
-                        name="date"
-                        rules={[{required: true, message: "Select a date"}]}
-                    >
-                        <DatePicker
-                            format="MM/DD/YYYY"
-                            disabledDate={(current) => current && current < dayjs().startOf('day')}
-                        />
-                    </Form.Item>
+    // -----------------------------
+    // 3. Submit to your API
+    // -----------------------------
+    const res = await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-                    <Form.Item
-                        label="Time"
-                        name="time"
-                        rules={[{required: true, message: "Select a time"}]}
-                    >
-                        <TimePicker format="h:mm A" use12Hours minuteStep={5} />
-                    </Form.Item>
-                    </div>
+    const result = await res.json();
 
-                    <div style={{display: "flex", gap: "16px"}}>
-                        <Button
-                            onClick={() => router.push('/')}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="primary"
-                            loading={loading}
-                            htmlType="submit"
-                            style={{backgroundColor: "#CC0000", borderColor: "#CC0000"}}
-                        >
-                            Post Event
-                        </Button>
-                    </div>
-                </Form>
-            </Card>
-        </div>
-    );
+    if (!res.ok) {
+      console.error("API error:", result);
+      msgApi.error(result.error || "Failed to post event");
+    } else {
+      msgApi.success("Event posted successfully!");
+      router.push("/post/success");
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    msgApi.error("Unexpected error occurred");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  return (
+    <>
+      {contextHolder}
+      <Card>
+        <Typography.Title level={3}>Post a New Event</Typography.Title>
+        <Form layout="vertical" onFinish={handleFinish}>
+          <Form.Item label="Event Title" name="title" rules={[{ required: true, message: "Enter a title" }]}>
+            <Input placeholder="Enter a title" />
+          </Form.Item>
+
+          <Form.Item label="Description" name="description" rules={[{ required: true, message: "Enter a description" }]}>
+            <Input.TextArea rows={3} placeholder="Describe your event..." />
+          </Form.Item>
+
+          <Form.Item label="Dietary Options" name="dietary_tags">
+            <Select mode="multiple" options={dietaryOptions} placeholder="Select dietary options" />
+          </Form.Item>
+
+          <Form.Item label="Allergy Warnings" name="allergy_tags">
+            <Select mode="multiple" options={allergyOptions} placeholder="Select allergy warnings" />
+          </Form.Item>
+
+          <Form.Item label="Location" name="location" rules={[{ required: true, message: "Enter the location" }]}>
+            <Input placeholder="CFA Lobby, Warren Towers, StuVi 2 Lounge..." />
+          </Form.Item>
+
+          <Form.Item label="Campus" name="campus" rules={[{ required: true, message: "Select a campus" }]}>
+            <Select placeholder="Select campus" options={campusOptions} />
+          </Form.Item>
+
+          <Form.Item label="Address (Optional)" name="address">
+            <Input placeholder="700 Commonwealth Ave..." />
+          </Form.Item>
+
+          <Form.Item
+            label="Capacity"
+            name="capacity"
+            rules={[
+              { required: true, message: "Enter capacity" },
+              {
+                validator: (_, value) => {
+                  const num = Number(value);
+                  if (!Number.isInteger(num)) return Promise.reject("Capacity must be an integer");
+                  if (num <= 0) return Promise.reject("Capacity must be greater than 0");
+                  if (num > 5000) return Promise.reject("Capacity is too large");
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Input type="number" placeholder="30" />
+          </Form.Item>
+
+          <Form.Item label="Event Date" name="date" rules={[{ required: true, message: "Select a date" }]}>
+            <DatePicker />
+          </Form.Item>
+
+          <Form.Item label="Start Time" name="start_time" rules={[{ required: true, message: "Select start time" }]}>
+            <TimePicker format="hh:mm A" use12Hours />
+          </Form.Item>
+
+          <Form.Item label="End Time" name="end_time" rules={[{ required: true, message: "Select end time" }]}>
+            <TimePicker format="hh:mm A" use12Hours />
+          </Form.Item>
+
+          <Form.Item label="Event Image (optional)" name="image" valuePropName="fileList" getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}>
+            <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
+              <Button icon={<UploadOutlined />}>Upload Image</Button>
+            </Upload>
+          </Form.Item>
+
+          <div style={{ display: "flex", gap: "16px" }}>
+            <Button onClick={() => router.push("/event")} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={loading} style={{ backgroundColor: "#CC0000", borderColor: "#CC0000", color: "#fff" }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#1890ff")}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#CC0000")}>
+              Post Event
+            </Button>
+          </div>
+        </Form>
+      </Card>
+    </>
+  );
 }
