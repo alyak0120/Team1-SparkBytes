@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -66,7 +66,7 @@ export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Fetch Supabase events + live updates
-  useEffect(() => {
+  useEffect(()=> {
     const supabase = createClient();
 
     async function fetchEvents() {
