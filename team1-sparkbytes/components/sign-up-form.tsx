@@ -3,11 +3,9 @@
 import { useState } from 'react';
 import { Card, Input, Button, Checkbox, message } from 'antd';
 import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Sparkles } from 'lucide-react';
-
 import { createClient } from "@/lib/supabase/client";
 
-const supabase = createClient(); // serves as a window to the DB
+const supabase = createClient(); // Supabase client
 
 interface SignUpProps {
   onSignUp: () => void;
@@ -26,22 +24,14 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  const handleNavigate = (path: string) => {
-    if (onNavigate) onNavigate(path);
-  };
-
-  // FORM VALIDATION
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name) newErrors.name = "Please input your name!";
-
     if (!formData.email) {
-      newErrors.email = "Please input your email!";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email!";
+      newErrors.email = "Please input your BU email!";
     } else if (!formData.email.endsWith("@bu.edu")) {
-      newErrors.email = "Enter a valid BU email address (@bu.edu)";
+      newErrors.email = "Email must be a BU address (@bu.edu)";
     }
 
     if (!formData.password) {
@@ -50,28 +40,29 @@ export default function SignUpForm({ onSignUp, onNavigate }: SignUpProps) {
       newErrors.password = "Password must be at least 6 characters!";
     }
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password!";
-    } else if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match!";
     }
 
-    if (!formData.agreement) newErrors.agreement = "Please accept the terms";
+    if (!formData.agreement)
+      newErrors.agreement = "You must accept the terms.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
   if (!validateForm()) return;
 
   setLoading(true);
 
+  // IMPORTANT: DO NOT include redirect_to when confirm email is OFF
   const { data, error } = await supabase.auth.signUp({
     email: formData.email,
     password: formData.password,
     options: {
-      data: { name: formData.name }, // store name in user metadata
+      emailRedirectTo: undefined,  // <-- FIX
+      data: { name: formData.name },
     },
   });
 
@@ -81,46 +72,52 @@ const handleSubmit = async () => {
     return;
   }
 
-  // If email confirmations are enabled in Supabase, user must check inbox
-  if (data.user && !data.session) {
-    message.success("Account created! Please check your email to confirm.");
-  } else {
-    message.success("Account created successfully!");
-    onSignUp(); // navigate to login or dashboard
-  }
+    // 2️⃣ Send welcome email (does not block user)
+    fetch("/api/email/welcome", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: formData.email,
+      name: formData.name,
+    }),
+  });
+    // 3️⃣ Handle incomplete sign-ups (Supabase email confirmation)
+    if (!data.session) {
+      message.success("Account created! Check your BU email to confirm.");
+    } else {
+      message.success("Account created successfully!");
+      onSignUp();
+    }
 
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
-
-  
-  // UI
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-lg" style={{ padding: "2rem" }}>
-        {/* Logo */}
+        
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center">
-              <img 
+            <img 
               src="https://content.sportslogos.net/logos/30/619/full/boston_university_terriers_logo_secondary_2005_sportslogosnet-9216.png"
-              alt="Boston University Logo">
-              </img>
+              alt="Boston University Logo"
+            />
           </div>
         </div>
 
         <h1 className="text-center text-red-600 mb-2">Join SparkBytes!</h1>
         <p className="text-center text-gray-600 mb-8">
-          Help reduce food waste at BU
+          Help reduce food waste at BU.
         </p>
 
         {/* FORM */}
         <div className="space-y-5">
-          {/* Full Name */}
+
           <div>
             <label className="block text-sm mb-1.5">Full Name</label>
             <Input
               size="large"
-              prefix={<UserOutlined className="text-gray-400" />}
+              prefix={<UserOutlined />}
               placeholder="Your Name"
               value={formData.name}
               status={errors.name ? "error" : ""}
@@ -129,17 +126,14 @@ const handleSubmit = async () => {
                 setErrors({ ...errors, name: "" });
               }}
             />
-            {errors.name && (
-              <div className="text-red-500 text-sm mt-1">{errors.name}</div>
-            )}
+            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-sm mb-1.5">BU Email</label>
             <Input
               size="large"
-              prefix={<MailOutlined className="text-gray-400" />}
+              prefix={<MailOutlined />}
               placeholder="example@bu.edu"
               value={formData.email}
               status={errors.email ? "error" : ""}
@@ -148,18 +142,14 @@ const handleSubmit = async () => {
                 setErrors({ ...errors, email: "" });
               }}
             />
-            {errors.email && (
-              <div className="text-red-500 text-sm mt-1">{errors.email}</div>
-            )}
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm mb-1.5">Password</label>
             <Input.Password
               size="large"
-              prefix={<LockOutlined className="text-gray-400" />}
-              placeholder="••••••••"
+              prefix={<LockOutlined />}
               value={formData.password}
               status={errors.password ? "error" : ""}
               onChange={(e) => {
@@ -167,77 +157,60 @@ const handleSubmit = async () => {
                 setErrors({ ...errors, password: "" });
               }}
             />
-            {errors.password && (
-              <div className="text-red-500 text-sm mt-1">
-                {errors.password}
-              </div>
-            )}
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block text-sm mb-1.5">Confirm Password</label>
             <Input.Password
               size="large"
-              prefix={<LockOutlined className="text-gray-400" />}
-              placeholder="••••••••"
+              prefix={<LockOutlined />}
               value={formData.confirmPassword}
               status={errors.confirmPassword ? "error" : ""}
               onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  confirmPassword: e.target.value,
-                });
+                setFormData({ ...formData, confirmPassword: e.target.value });
                 setErrors({ ...errors, confirmPassword: "" });
               }}
             />
             {errors.confirmPassword && (
-              <div className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword}
-              </div>
+              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
             )}
           </div>
 
-          {/* Agreement */}
-          <div>
-            <Checkbox
-              checked={formData.agreement}
-              onChange={(e) => {
-                setFormData({ ...formData, agreement: e.target.checked });
-                setErrors({ ...errors, agreement: "" });
-              }}
-            >
-              <span className={errors.agreement ? "text-red-500" : ""}>
-                I understand that SparkBytes is available for BU students only
-              </span>
-            </Checkbox>
-            {errors.agreement && (
-              <div className="text-red-500 text-sm mt-1">
-                {errors.agreement}
-              </div>
-            )}
-          </div>
+          <Checkbox
+            checked={formData.agreement}
+            onChange={(e) => {
+              setFormData({ ...formData, agreement: e.target.checked });
+              setErrors({ ...errors, agreement: "" });
+            }}
+          >
+            <span className={errors.agreement ? "text-red-500" : ""}>
+              I understand SparkBytes is for BU students only.
+            </span>
+          </Checkbox>
 
-          {/* Submit */}
+          {errors.agreement && (
+            <p className="text-red-500 text-sm">{errors.agreement}</p>
+          )}
+
           <Button
             type="primary"
             size="large"
             block
             loading={loading}
             onClick={handleSubmit}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600"
           >
             Create Account
           </Button>
         </div>
 
-        {/* Login link */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm">
             Already have an account?{" "}
             <a
-              onClick={() => handleNavigate("login")}
-              className="text-red-600 hover:text-red-700 cursor-pointer"
+              onClick={() => onNavigate?.("login")}
+              className="text-red-600 cursor-pointer"
             >
               Sign in
             </a>
