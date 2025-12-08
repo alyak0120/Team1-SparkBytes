@@ -1,39 +1,88 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Server-side API route that inserts an event into the `events` table.
-// IMPORTANT: this route uses the SERVICE ROLE KEY and must only run server-side.
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const {
+      title,
+      description,
+      dietary_tags,
+      allergy_tags,
+      location,
+      address,
+      campus,
+      capacity,
+      start_time,
+      end_time,
+      image_url // <-- include image URL from client
+    } = body;
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('Missing Supabase env vars', {
-        hasUrl: Boolean(SUPABASE_URL),
-        hasServiceKey: Boolean(SUPABASE_SERVICE_ROLE_KEY),
-      });
-      return NextResponse.json({ error: 'Supabase environment variables are not set on the server. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.' }, { status: 500 });
+    // -----------------------------
+    // VALIDATION
+    // -----------------------------
+    if (!title || !description || !location || !campus || !start_time || !end_time) {
+      return NextResponse.json(
+        { error: "Missing required fields: title, description, location, campus, start_time, end_time" },
+        { status: 400 }
+      );
     }
 
-    const supabaseAdmin = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-    );
-
-    const { data, error } = await supabaseAdmin.from('events').insert([body]);
-
-    if (error) {
-      console.error('Supabase insert error (server)', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const cap = Number(capacity);
+    if (isNaN(cap) || cap <= 0 || cap > 10000) {
+      return NextResponse.json(
+        { error: "Capacity must be a number between 1 and 10,000" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ data }, { status: 200 });
+    if (isNaN(Date.parse(start_time)) || isNaN(Date.parse(end_time))) {
+      return NextResponse.json(
+        { error: "start_time and end_time must be valid ISO date strings" },
+        { status: 400 }
+      );
+    }
+
+    // -----------------------------
+    // CREATE SUPABASE CLIENT (SERVICE ROLE)
+    // -----------------------------
+    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: { persistSession: false }
+    });
+
+    // -----------------------------
+    // INSERT EVENT
+    // -----------------------------
+    const { data: event, error: insertErr } = await supabase
+      .from("events")
+      .insert({
+        title,
+        description,
+        dietary_tags: dietary_tags || [],
+        allergy_tags: allergy_tags || [],
+        location,
+        address: address || null,
+        campus,
+        capacity: cap,
+        start_time,
+        end_time,
+        image_url: image_url || null // <-- insert image URL
+      })
+      .select()
+      .single();
+
+    if (insertErr) {
+      console.error("Event insert error:", insertErr);
+      return NextResponse.json({ error: insertErr.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ event }, { status: 200 });
   } catch (err: any) {
-    console.error('API /api/events error', err);
-    return NextResponse.json({ error: err?.message ?? 'Unknown error' }, { status: 500 });
+    console.error("Unhandled error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

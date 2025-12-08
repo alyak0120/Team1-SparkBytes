@@ -1,3 +1,4 @@
+"use client";
 import { Card, Typography, Space, Tooltip, Button } from "antd";
 import {
   CheckOutlined,
@@ -10,6 +11,9 @@ import {
 
 import BookmarkButton from "@/components/bookmark-button";
 import ReportButton from "@/components/report-button";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export default function EventCard({
   event,
@@ -18,6 +22,65 @@ export default function EventCard({
   reserves,
   reserve,
 }: any) {
+  async function getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) {
+      console.error('Error fetching user:', error.message);
+      return null;
+    }
+
+    if (user) {
+      console.log('Currently logged in user:', user);
+      // setUser(user);
+      return user;
+    } else {
+      console.log('No user is currently logged in.');
+      return null;
+    }
+  }
+
+  async function handleReserve() { // Function to handle reserves on event page
+    const user = await getCurrentUser(); // Grab current logged user
+    if (user) { // Case: A user is logged in
+      console.log("handling reserve with user: ", user);
+
+      const {data, error} = await supabase
+      .from('reservations').select('*').eq('event_id', `${event.id}`).eq('user_id', `${user.id}`);
+      if (error) {
+        console.error('Error fetching user data:', error.message);
+        alert('There was an error trying to process your request, please try again later.')
+      } else {
+        if (data.length > 0) { // The user already reserved this event, remove the reservations
+          const { error } = await supabase
+          .from('reservations').delete().eq('event_id', `${event.id}`).eq('user_id', `${user.id}`);
+
+          if (error) {
+            console.error('Error deleting row:', error.message);
+          } else {
+            console.log('Row delete successfully.')
+          }
+        } else { // The user has not reserved this event, add reservation
+          const {data, error} = await supabase
+          .from('reservations').insert([
+            { event_id: `${event.id}`, user_id: `${user.id}`}
+          ]);
+          
+          if (error) {
+            console.error('Error inserting data:', error.message);
+          } else {
+            console.log('Data inserted successfully:', data);
+          }
+        }
+      } 
+    } else {
+      alert('You need to be logged in to reserve an event!');
+      return;
+    }
+    
+    reserve(event.id);
+  }
+
   return (
     <Card
       hoverable
@@ -118,7 +181,7 @@ export default function EventCard({
               color: reserves.includes(event.id) ? "#fff" : undefined,
             }}
             icon={reserves.includes(event.id) ? <CheckOutlined /> : null}
-            onClick={() => reserve(event.id)}
+            onClick={handleReserve}
           >
             {reserves.includes(event.id) ? "Reserved" : "Reserve"}
           </Button>

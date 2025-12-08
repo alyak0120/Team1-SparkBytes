@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthButton } from "@/components/auth-button"; 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { NavButtons } from "@/components/nav-buttons";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -44,13 +45,9 @@ export default function RootLayout({
       }}>
       <header className="w-full border-b">
         <div className="flex">
-          <div className="max-w-6xl py-3 px-4 flex gap-2 items-center">
-            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/event">Events</Link></Button>
-            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}><Link href="/dashboard">Your Account</Link></Button>
-            <Button size="sm" style={{backgroundColor: "#CC0000", color: "white"}}>About</Button>
-          </div>
+          <NavButtons/>
           <div className="ml-auto max-w-6xl py-3 px-4 flex items-center gap-4">
-            <div className="font-semibold">Spark!Bytes</div>
+            <div style={{color: "black",}} className="font-semibold">Spark!Bytes</div>
             
             <AuthButton /> {/* this is the new button */}
           </div>

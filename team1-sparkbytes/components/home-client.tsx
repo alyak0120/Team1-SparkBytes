@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Space, Tooltip, ConfigProvider, theme, Button, Drawer, Menu } from 'antd';
+import { Space, Tooltip, ConfigProvider, theme, Button, Drawer, Menu, Row, Col, Card } from 'antd';
 import { PlusOutlined, MenuOutlined, UserOutlined, BookOutlined, FlagOutlined } from '@ant-design/icons';
 import dynamic from "next/dynamic";
 import SearchBar from "@/components/search-bar";
@@ -10,81 +11,50 @@ import EventList from "@/components/event-list";
 
 const Map = dynamic(() => import('@/components/map'), { ssr: false });
 
-const defaults = {
-  Pizza: "/images/pizza.jpg",
-  Mexican: "/images/tacos.jpg",
-  Asian: "/images/sushi.jpg",
-  Breakfast: "/images/muffins.jpg",
-  Other: "/images/default.jpg"
-};
+const defaults = { Other: "/images/default.jpg" };
 
 const mockEvents = [
   {
     id: 1,
     title: "Pizza Night",
-    category: "Pizza",
     description: "Join us for free pizza slices and good vibes!",
-    location: "Student Union",
+    location: "GSU",
     campus: "Central Campus",
-    time: "5:00 PM - 7:00 PM",
-    servingsLeft: 10,
-    image: "/images/pizza.jpg",
-    dietary: ["Vegetarian"],
-    allergies: ["Contains Dairy", "Contains Gluten"]
+    capacity: 50,
+    attendee_count: 0,
+    start_time: "2024-10-10T18:00:00Z",
+    end_time: "2024-10-10T20:00:00Z",
+    dietary_tags: ["Vegetarian"],
+    allergy_tags: ["Dairy-Free", "Gluten-Free"],
+    image_url: "/images/pizza.jpg"
   },
   {
     id: 2,
     title: "Taco Tuesday",
-    category: "Mexican",
     description: "Spicy tacos and fun games!",
-    location: "Cafeteria Patio",
+    location: "Warren Towers Common Room",
     campus: "East Campus",
-    time: "6:00 PM - 8:00 PM",
-    servingsLeft: 6,
-    image: "/images/tacos.jpg",
-    dietary: ["Halal"],
-    allergies: ["Contains Gluten"]
-  },
-  {
-    id: 3,
-    title: "Sushi Social",
-    category: "Asian",
-    description: "Fresh sushi rolls made on site!",
-    location: "Library Courtyard",
-    campus: "West Campus",
-    time: "12:00 PM - 2:00 PM",
-    servingsLeft: 12,
-    image: "/images/sushi.jpg",
-    dietary: ["Pescatarian"],
-    allergies: ["Contains Soy"]
-  },
-  {
-    id: 4,
-    title: "Bagel Brunch",
-    category: "Breakfast",
-    description: "Cream cheese, coffee, and bagels!",
-    location: "Campus Café",
-    campus: "Fenway Campus",
-    time: "10:00 AM - 12:00 PM",
-    servingsLeft: 8,
-    image: "/images/muffins.jpg",
-    dietary: ["Vegetarian"],
-    allergies: ["Contains Dairy", "Contains Gluten"]
+    capacity: 40,
+    attendee_count: 0,
+    start_time: "2024-10-15T18:00:00Z",
+    end_time: "2024-10-15T20:00:00Z",
+    dietary_tags: ["Halal"],
+    allergy_tags: ["Gluten-Free"],
+    image_url: "/images/tacos.jpg"
   }
 ];
 
-const categories = ["All", "Pizza", "Mexican", "Asian", "Breakfast", "Other"];
 const sortOptions = [
   { value: "time", label: "Newest" },
   { value: "servings", label: "Servings Left" }
 ];
 const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Halal", "Kosher", "Pescatarian"];
-const allergyOptions = ["Peanut-Free", "Dairy-Free", "Soy-Free", "Gluten-Free"];
-const locationOptions = ["East Campus", "West Campus", "South Campus", "Central Campus", "Fenway Campus"];
+const allergyOptions = ["Nut-Free", "Dairy-Free", "Soy-Free", "Gluten-Free", "Shellfish-Free"];
+const locationOptions = ["East", "West", "South", "Central", "Fenway"];
 
 export default function Home() {
   const router = useRouter();
-  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [events, setEvents] = useState(mockEvents);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
   const [sort, setSort] = useState<"time" | "servings">("time");
@@ -95,17 +65,102 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const filteredEvents = mockEvents
-    .filter(e => categoryFilter.length === 0 || categoryFilter.includes(e.category))
-    .filter(e => dietary.length === 0 || dietary.every(d => e.dietary.includes(d)))
-    .filter(e => allergy.length === 0 || allergy.every(a => !e.allergies.includes(a)))
+  // Fetch Supabase events + live updates
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchEvents() {
+      const { data, error } = await supabase.from('events').select('*').order('id', { ascending: false });
+      if (error) console.error("Supabase fetch error:", error);
+      else if (data) {
+      const fetchedEvents = data.map((e: any) => ({
+        id: e.id,
+        title: e.title,
+        description: e.description,
+        location: e.location,
+        campus: e.campus,
+        capacity: e.capacity,
+        attendee_count: e.attendee_count || 0,
+        start_time: e.start_time, // must exist
+        end_time: e.end_time,     // must exist
+        dietary_tags: e.dietary_tags || [],
+        allergy_tags: e.allergy_tags || [],
+        image_url: e.image_url || defaults.Other
+      }));
+      setEvents([...fetchedEvents]);
+      }
+    }
+
+    fetchEvents();
+
+    const subscription = supabase
+      .channel('public:events')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, payload => {
+        if (payload.eventType === 'INSERT') {
+          const newEvent = payload.new;
+          setEvents(prev => [
+          ...prev,
+          {
+            id: newEvent.id,
+            title: newEvent.title,
+            description: newEvent.description,
+            location: newEvent.location,
+            campus: newEvent.campus,
+            capacity: newEvent.capacity,
+            attendee_count: newEvent.attendee_count || 0,
+            start_time: newEvent.start_time,
+            end_time: newEvent.end_time,
+            dietary_tags: newEvent.dietary_tags || [],
+            allergy_tags: newEvent.allergy_tags || [],
+            image_url: newEvent.image_url || defaults.Other
+          }
+        ]);
+
+        }
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(subscription);
+  }, []);
+
+  const filteredEvents = events
+    .filter(e => dietary.length === 0 || dietary.every(d => e.dietary_tags.includes(d)))
+    .filter(e => allergy.length === 0 || allergy.every(a => !e.allergy_tags.includes(a)))
     .filter(e => location.length === 0 || location.includes(e.campus))
     .filter(e =>
       e.title.toLowerCase().includes(search.toLowerCase()) ||
       e.description.toLowerCase().includes(search.toLowerCase()) ||
       e.location.toLowerCase().includes(search.toLowerCase())
     )
-    .sort((a, b) => (sort === "time" ? a.id - b.id : b.servingsLeft - a.servingsLeft));
+    .sort((a, b) => {
+    if (sort === "time") {
+      // Newest first
+      return new Date(b.start_time).getTime() - new Date(a.start_time).getTime();
+    } else {
+      // Servings left descending
+      return b.capacity - a.capacity;    
+    }
+  });
+
+  const preparedEvents = filteredEvents.map(e => {
+  const start = new Date(e.start_time);
+  const end = new Date(e.end_time);
+
+  // Format date as MM/DD
+  const dateStr = `${start.getMonth() + 1}/${start.getDate()}`;
+
+  // Format times as h:mm AM/PM
+  const startTimeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const endTimeStr = end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+  return {
+    ...e,
+    time: `${dateStr} | ${startTimeStr} - ${endTimeStr}`, // final display
+    servingsLeft: e.capacity, // remaining spots
+    image: e.image_url || defaults.Other,
+  };
+  });
+
 
   const favs = (id: number) =>
     setFavorites(prev => (prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]));
@@ -113,30 +168,55 @@ export default function Home() {
   const reserve = (id: number) =>
     setReserves(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
 
+  useEffect(() => {
+    const supabase = createClient();
+    console.log("Fetching reservations!");
+    const fetchReservations = async () => {
+      const userReserves = [];
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error fetching user:', error.message);
+        return null;
+      }
+
+      if (user) {
+        console.log('Fetching reservations with user:', user);
+        const { data, error } = await supabase
+        .from('reservations').select('event_id').eq('user_id', user.id);
+        if (error) {
+            console.error("Error fetching user's reservations: ", error.message);
+        } else {
+          for (let i = 0; i < data.length; i++) {
+            userReserves.push(data[i].event_id);
+          }
+          setReserves(userReserves);
+          console.log(userReserves);
+        }
+      } else {
+        console.log('No user is currently logged in.');
+        return null;
+      }
+    }
+  fetchReservations();
+  }, []);
+
   return (
     <>
       <ConfigProvider
         theme={{
           algorithm: theme.defaultAlgorithm,
-          token: {
-            colorPrimary: "#CC0000",
-            borderRadius: 12,
-            colorBgContainer: "#fff"
-          }
+          token: { colorPrimary: "#CC0000", borderRadius: 12, colorBgContainer: "#fff" }
         }}
       >
         <Space direction="vertical" size="large" style={{ width: "100%", padding: "24px 32px" }}>
 
-
           {/* Header row (hamburger + search bar) */}
           <Space style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            
             <Space size="small">
             <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} />
                     {/* Filters */}
           <Filters
-            categories={categories}
-            categoryFilter={categoryFilter}
-            setCategoryFilter={setCategoryFilter}
             layout={layout}
             sort={sort}
             setSort={setSort}
@@ -153,10 +233,8 @@ export default function Home() {
           />
           </Space>
 
-            <Space size="small">
-
-            <SearchBar layout={layout} setLayout={setLayout} search={search} setSearch={setSearch} />
-
+          <Space size="small">
+          <SearchBar layout={layout} setLayout={setLayout} search={search} setSearch={setSearch} />
             <Button
                 type={sort === "servings" ? "primary" : "default"}
                 onClick={() => setSort("servings")}
@@ -172,16 +250,18 @@ export default function Home() {
           </Space>
           </Space>
 
-          {/* Event list or map */}
-          {layout === "list" ? (
+        {/* Event cards */}
+          {layout === "list" && filteredEvents?.length ? (
             <EventList
-              filteredEvents={filteredEvents}
+              filteredEvents={preparedEvents}
               favorites={favorites}
               favs={favs}
               reserves={reserves}
               reserve={reserve}
               defaults={defaults}
             />
+          ) : layout === "list" ? (
+            <p>No events found.</p>
           ) : (
             <Map />
           )}
