@@ -5,6 +5,7 @@ import { useState } from "react";
 
 const { Title, Text } = Typography;
 
+// Props interface for Filters component //
 interface FilterProps {
     layout: "map" | "list";
     sort: "time" | "servings";
@@ -23,7 +24,7 @@ interface FilterProps {
     setLocation: (val: string[]) => void;
     locationOptions: string[];
 }
-
+// Main Filters component for event filtering UI //
 export default function Filters({
     sort,
     setSort,
@@ -43,6 +44,7 @@ export default function Filters({
 
     return (
         <>
+        // Button to open filters drawer //
             <Button
                 icon={<FilterOutlined />}
                 onClick={() => setOpen(true)}
@@ -51,6 +53,8 @@ export default function Filters({
             >
                 Filters
             </Button>
+            
+            {/* Drawer for filters */}
             <Drawer
                 title="Filters"
                 placement="left"
@@ -60,6 +64,7 @@ export default function Filters({
             >
                 <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                     <Space direction="vertical" style={{ width: "100%", flex: 1 }} size={4}>
+                        {/* Collapse panels for each filter category */}
                         <Collapse
                             ghost
                             style={{ width: "100%" }}
@@ -70,6 +75,7 @@ export default function Filters({
                                     label: <Title level={5} style={{ margin: 0 }}>Dietary Preferences</Title>,
                                     children: (
                                         <>
+                                        {/* description about dietary filter */}
                                             <Text type="secondary" style={{ fontSize: 12 }}>
                                                 Events shown satisfy <b>all</b> selected dietary preferences.
                                             </Text>
@@ -90,6 +96,7 @@ export default function Filters({
                                     label: <Title level={5} style={{ margin: 0 }}>Allergies</Title>,
                                     children: (
                                         <>
+                                        {/* description about allergy filter */}
                                             <Text type="secondary" style={{ fontSize: 12 }}>
                                                 Events shown do <b>not contain</b> any selected allergens.
                                             </Text>
@@ -123,6 +130,7 @@ export default function Filters({
                             ]}
                         />
                     </Space>
+                    {/* Button to clear all filters */}
                     <Button
                         danger
                         block

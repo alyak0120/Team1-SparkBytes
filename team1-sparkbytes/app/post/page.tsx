@@ -11,7 +11,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
 );
-
+//options for dietary
 const dietaryOptions = [
   { label: "Vegan", value: "Vegan" },
   { label: "Vegetarian", value: "Vegetarian" },
@@ -21,6 +21,7 @@ const dietaryOptions = [
   { label: "Pescatarian", value: "Pescatarian" },
 ];
 
+//options for allergies
 const allergyOptions = [
   { label: "Dairy-Free", value: "Dairy-Free" },
   { label: "Nut-Free", value: "Nut-Free" },
@@ -28,6 +29,7 @@ const allergyOptions = [
   { label: "Shellfish-Free", value: "Shellfish-Free" },
 ];
 
+//options for part of BU campus
 const campusOptions = [
   { label: "West", value: "West" },
   { label: "East", value: "East" },
@@ -35,6 +37,7 @@ const campusOptions = [
   { label: "Fenway", value: "Fenway" },
 ];
 
+//main function for posting a new event
 export default function NewEvent() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -143,36 +146,48 @@ export default function NewEvent() {
     <>
       {contextHolder}
       <Card>
+        {/* post event form title */}
         <Typography.Title level={3}>Post a New Event</Typography.Title>
+        
+        {/* when submitted, call handleFinish function */}
         <Form layout="vertical" onFinish={handleFinish}>
+          
+          {/* space for inputting event title, required */}
           <Form.Item label="Event Title" name="title" rules={[{ required: true, message: "Enter a title" }]}>
             <Input placeholder="Enter a title" />
           </Form.Item>
 
+          {/* space for inputting event description, required */}
           <Form.Item label="Description" name="description" rules={[{ required: true, message: "Enter a description" }]}>
             <Input.TextArea rows={3} placeholder="Describe your event..." />
           </Form.Item>
 
+          {/* space for selecting dietary options, optional */}
           <Form.Item label="Dietary Options" name="dietary_tags">
             <Select mode="multiple" options={dietaryOptions} placeholder="Select dietary options" />
           </Form.Item>
 
+          {/* space for selecting allergy warnings, optional */}
           <Form.Item label="Allergy Warnings" name="allergy_tags">
             <Select mode="multiple" options={allergyOptions} placeholder="Select allergy warnings" />
           </Form.Item>
 
+          {/* space for inputting campus location, required */}
           <Form.Item label="Location" name="location" rules={[{ required: true, message: "Enter the location" }]}>
             <Input placeholder="CFA Lobby, Warren Towers, StuVi 2 Lounge..." />
           </Form.Item>
 
+          {/* space for selecting area of campus, required */}
           <Form.Item label="Campus" name="campus" rules={[{ required: true, message: "Select a campus" }]}>
             <Select placeholder="Select campus" options={campusOptions} />
           </Form.Item>
 
+          {/* space for inputting address, optional */}
           <Form.Item label="Address (Optional)" name="address">
             <Input placeholder="700 Commonwealth Ave..." />
           </Form.Item>
 
+          {/* space for inputting event capacity, required, must be integer in range */}
           <Form.Item
             label="Capacity"
             name="capacity"
@@ -192,24 +207,29 @@ export default function NewEvent() {
             <Input type="number" placeholder="30" />
           </Form.Item>
 
+          {/* space for picking event date, required */}
           <Form.Item label="Event Date" name="date" rules={[{ required: true, message: "Select a date" }]}>
             <DatePicker />
           </Form.Item>
 
+          {/* space for inputting event start time, required */}
           <Form.Item label="Start Time" name="start_time" rules={[{ required: true, message: "Select start time" }]}>
             <TimePicker format="hh:mm A" use12Hours />
           </Form.Item>
 
+          {/* space for inputting event end time, required */}
           <Form.Item label="End Time" name="end_time" rules={[{ required: true, message: "Select end time" }]}>
             <TimePicker format="hh:mm A" use12Hours />
           </Form.Item>
 
+          {/* space for uploading event image, optional */}
           <Form.Item label="Event Image (optional)" name="image" valuePropName="fileList" getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}>
             <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Upload Image</Button>
             </Upload>
           </Form.Item>
 
+          {/* logic for if form is cancelled (route to home page) or event is posted */}
           <div style={{ display: "flex", gap: "16px" }}>
             <Button onClick={() => router.push("/event")} disabled={loading}>
               Cancel
