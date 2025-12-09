@@ -10,5 +10,7 @@ export default function ReportPage() {
         <ReportForm />
       </div>
     </div>
+
+    
   );
 }
