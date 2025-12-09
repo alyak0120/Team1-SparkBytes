@@ -17,8 +17,6 @@ const supabase = createClient();
 
 export default function EventCard({
   event,
-  favorites,
-  favs,
   reserves,
   reserve,
 }: any) {
@@ -147,22 +145,6 @@ export default function EventCard({
           padding: "8px 12px",
         }}
       >
-        {/* Favorite */}
-        <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-          <Tooltip title="Favorite">
-            <Button
-              type="text"
-              icon={
-                favorites.includes(event.id) ? (
-                  <HeartFilled style={{ color: "#CC0000" }} />
-                ) : (
-                  <HeartOutlined />
-                )
-              }
-              onClick={() => favs(event.id)}
-            />
-          </Tooltip>
-        </div>
 
         {/* Bookmark */}
         <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>

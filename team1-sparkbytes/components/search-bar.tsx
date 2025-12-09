@@ -1,8 +1,11 @@
 import {Button, Space, Input} from "antd";
-import {UnorderedListOutlined, EnvironmentOutlined} from "@ant-design/icons";
+import {UnorderedListOutlined, EnvironmentOutlined, SearchOutlined} from "@ant-design/icons";
 
 
 export default function SearchBar({layout, setLayout, search, setSearch} : any) {
+    const handleSearch = () => {
+        console.log("Searching for:", search);
+    }
     return(
         <Space size="middle" wrap>
             <Button
@@ -19,14 +22,19 @@ export default function SearchBar({layout, setLayout, search, setSearch} : any) 
             >
             Map
             </Button>
-            <Input.Search
+            <Space.Compact>
+            <Input
                 placeholder="Search events..."
                 allowClear
                 value={search}
-                enterButton
                 onChange={(e) => setSearch(e.target.value)}
+                onPressEnter={handleSearch}
                 style={{width: 400}}
             />
+            <Button type="primary" onClick={handleSearch}>
+                <SearchOutlined />
+            </Button>
+            </Space.Compact>
         </Space>
     );
 }
