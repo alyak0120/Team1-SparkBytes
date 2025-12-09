@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 const supabase = createClient();
 
-export default function EventList({filteredEvents, favorites, favs, reserves, reserve, defaults}:any) {
+export default function EventList({filteredEvents, reserves, reserve, defaults}:any) {
     async function getCurrentUser() {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) {
@@ -31,8 +31,6 @@ export default function EventList({filteredEvents, favorites, favs, reserves, re
                         <Col key={event.id} xs={24} sm={12} md={8} lg={6}>
                             <EventCard
                                 event={event}
-                                favorites={favorites}
-                                favs={favs}
                                 reserves={reserves}
                                 reserve={reserve}
                                 defaults={defaults}

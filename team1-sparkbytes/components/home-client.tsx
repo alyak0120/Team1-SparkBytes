@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -55,7 +55,6 @@ const locationOptions = ["East", "West", "South", "Central", "Fenway"];
 export default function Home() {
   const router = useRouter();
   const [events, setEvents] = useState(mockEvents);
-  const [favorites, setFavorites] = useState<number[]>([]);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
   const [sort, setSort] = useState<"time" | "servings">("time");
   const [reserves, setReserves] = useState<number[]>([]);
@@ -66,7 +65,7 @@ export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Fetch Supabase events + live updates
-  useEffect(() => {
+  useEffect(()=> {
     const supabase = createClient();
 
     async function fetchEvents() {
@@ -128,9 +127,9 @@ export default function Home() {
     .filter(e => allergy.length === 0 || allergy.every(a => !e.allergy_tags.includes(a)))
     .filter(e => location.length === 0 || location.includes(e.campus))
     .filter(e =>
-      e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.description.toLowerCase().includes(search.toLowerCase()) ||
-      e.location.toLowerCase().includes(search.toLowerCase())
+      (e.title?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (e.description?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (e.location?.toLowerCase() || "").includes(search.toLowerCase())
     )
     .sort((a, b) => {
     if (sort === "time") {
@@ -161,9 +160,6 @@ export default function Home() {
   };
   });
 
-
-  const favs = (id: number) =>
-    setFavorites(prev => (prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]));
 
   const reserve = (id: number) =>
     setReserves(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
@@ -254,8 +250,6 @@ export default function Home() {
           {layout === "list" && filteredEvents?.length ? (
             <EventList
               filteredEvents={preparedEvents}
-              favorites={favorites}
-              favs={favs}
               reserves={reserves}
               reserve={reserve}
               defaults={defaults}
