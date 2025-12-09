@@ -5,8 +5,6 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   UserOutlined,
-  HeartOutlined,
-  HeartFilled,
 } from "@ant-design/icons";
 
 import BookmarkButton from "@/components/bookmark-button";
@@ -80,8 +78,10 @@ export default function EventCard({
   }
 
   return (
+    //singular card component for event //
     <Card
       hoverable
+      /* cover is img submitted by user or default */
       cover={
         <img
           alt={event.title}
@@ -122,7 +122,8 @@ export default function EventCard({
             WebkitBoxOrient: "vertical",
           }}
           >{event.description}</p>
-
+        
+        {/* icons for each detail included on card */}
         <Space direction="vertical" size={2}>
           <Typography.Text>
             <EnvironmentOutlined /> {event.location}

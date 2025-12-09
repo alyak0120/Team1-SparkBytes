@@ -3,11 +3,13 @@ import {UnorderedListOutlined, EnvironmentOutlined, SearchOutlined} from "@ant-d
 
 
 export default function SearchBar({layout, setLayout, search, setSearch} : any) {
+    {/* Function to handle search action */}
     const handleSearch = () => {
         console.log("Searching for:", search);
     }
     return(
         <Space size="middle" wrap>
+            {/* Buttons to toggle between list and map layouts */}
             <Button
                 type={layout === 'list' ? 'primary' : 'default'}
                 icon={<UnorderedListOutlined />}
@@ -22,6 +24,7 @@ export default function SearchBar({layout, setLayout, search, setSearch} : any) 
             >
             Map
             </Button>
+            {/* Search input and button */}
             <Space.Compact>
             <Input
                 placeholder="Search events..."

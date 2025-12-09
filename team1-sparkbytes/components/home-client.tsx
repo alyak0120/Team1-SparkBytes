@@ -11,6 +11,7 @@ import EventList from "@/components/event-list";
 
 const Map = dynamic(() => import('@/components/map'), { ssr: false });
 
+// Default images for events without specific images //
 const defaults = { Other: "/images/default.jpg" };
 
 const mockEvents = [
@@ -44,15 +45,19 @@ const mockEvents = [
   }
 ];
 
+// Options for sorting events //
 const sortOptions = [
   { value: "time", label: "Newest" },
   { value: "servings", label: "Servings Left" }
 ];
+
+// Options for filtering events //
 const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Halal", "Kosher", "Pescatarian"];
 const allergyOptions = ["Nut-Free", "Dairy-Free", "Soy-Free", "Gluten-Free", "Shellfish-Free"];
 const locationOptions = ["East", "West", "South", "Central", "Fenway"];
 
 export default function Home() {
+  // State variables //
   const router = useRouter();
   const [events, setEvents] = useState(mockEvents);
   const [layout, setLayout] = useState<'map' | 'list'>('list');
@@ -121,7 +126,8 @@ export default function Home() {
 
     return () => supabase.removeChannel(subscription);
   }, []);
-
+  
+  // Filter and sort events based on user selections //
   const filteredEvents = events
     .filter(e => dietary.length === 0 || dietary.every(d => e.dietary_tags.includes(d)))
     .filter(e => allergy.length === 0 || allergy.every(a => !e.allergy_tags.includes(a)))
@@ -160,10 +166,11 @@ export default function Home() {
   };
   });
 
-
+  {/* Function to handle reserving/unreserving an event */}
   const reserve = (id: number) =>
     setReserves(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
 
+  {/* Fetch user's current reservations on component mount */}
   useEffect(() => {
     const supabase = createClient();
     console.log("Fetching reservations!");
@@ -211,7 +218,8 @@ export default function Home() {
             
             <Space size="small">
             <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawerOpen(true)} />
-                    {/* Filters */}
+          
+          {/* Filters */}
           <Filters
             layout={layout}
             sort={sort}
@@ -229,6 +237,7 @@ export default function Home() {
           />
           </Space>
 
+          {/* Search bar + sort buttons */}
           <Space size="small">
           <SearchBar layout={layout} setLayout={setLayout} search={search} setSearch={setSearch} />
             <Button

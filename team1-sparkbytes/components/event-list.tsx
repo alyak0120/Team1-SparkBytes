@@ -22,13 +22,16 @@ export default function EventList({filteredEvents, reserves, reserve, defaults}:
         }
     }
     return (
+        //layout for displaying list of event cards //
         <div style={{marginTop: 12}}>
             <Row gutter={[24,24]} justify="start" align="stretch">
+                {/* if no events found, display message */}
                 {filteredEvents.length === 0 ? (
                     <Empty description="No events found" />
                 ) : (
                     filteredEvents.map((event:any) => (
                         <Col key={event.id} xs={24} sm={12} md={8} lg={6}>
+                            {/* if events found, display list of event cards */}
                             <EventCard
                                 event={event}
                                 reserves={reserves}
