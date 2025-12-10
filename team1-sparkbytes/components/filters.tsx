@@ -44,7 +44,7 @@ export default function Filters({
 
     return (
         <>
-        // Button to open filters drawer //
+        {/* Button to open filters drawer */}
             <Button
                 icon={<FilterOutlined />}
                 onClick={() => setOpen(true)}
