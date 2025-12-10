@@ -7,7 +7,6 @@ SparkBytes helps Boston University students discover and share leftover food fro
 
 ## 📦 Features
 - 🔍 Search & filter events by category, dietary restrictions, campus, and more  
-- 📍 Toggle between Map and List views  
 - ⭐ Bookmark events  
 - ➕ Post new events  
 - 🔐 Secure authentication via Supabase  
