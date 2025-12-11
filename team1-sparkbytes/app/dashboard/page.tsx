@@ -170,7 +170,7 @@ const DashboardPage = () => {
 
           <Divider style={{ background: "black", margin: 0 }} />
 
-          <Splitter>
+          <Splitter onResize={() => {return}}>
             {/* LEFT SIDEBAR PANEL */}
             <Panel
               resizable={false}
@@ -199,7 +199,7 @@ const DashboardPage = () => {
               <Button onClick={showModal}>Update Profile Image</Button>
               <Modal
                 title="Update Profile"
-                visible={isModalVisible}
+                open={isModalVisible}
                 okText={"Update Image"}
                 onOk={handleOk}
                 onCancel={handleCancel}
