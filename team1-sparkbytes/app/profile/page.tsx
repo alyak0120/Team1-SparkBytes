@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import NotificationSettings from "@/components/notification-settings";
+import ReservedEvents from "@/components/reserved-events";
 
 export default async function ProfilePage() {
   // create Supabase server client
@@ -58,6 +59,15 @@ export default async function ProfilePage() {
             : "No preferences set"}
         </p>
       </div>
+
+      {/* Reserved Events */}
+      <section className="border rounded-xl p-4 bg-white shadow-sm">
+        <h2 className="text-lg font-medium mb-2">Your Reserved Events</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Events you have reserved. Click unreserve to cancel your reservation.
+        </p>
+        <ReservedEvents userId={user.id} />
+      </section>
 
       {/* Notification settings */}
       <section className="border rounded-xl p-4 bg-white shadow-sm">

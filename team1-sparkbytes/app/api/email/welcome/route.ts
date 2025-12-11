@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "");
+const apiKey = process.env.RESEND_API_KEY;
 
 export async function POST(req: Request) {
   try {
@@ -12,12 +12,12 @@ export async function POST(req: Request) {
     }
 
     // Mock mode if missing API key
-    if (!process.env.RESEND_API_KEY) {
+    if (!apiKey) {
       console.log("[MOCK] Would send welcome email to:", email);
       return NextResponse.json({ ok: true, mocked: true });
     }
 
-    const html = `
+    const resend = new Resend(apiKey);
     <div style="font-family: Arial, sans-serif; background:#fafafa; padding:24px;">
       <div style="max-width:500px;margin:auto;background:white;padding:28px;border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
         

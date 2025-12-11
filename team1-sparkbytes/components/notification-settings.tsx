@@ -1,9 +1,9 @@
 "use client";
-
+//imports 
 import { useEffect, useState } from "react";
 import { Switch, Spin, message } from "antd";
 import { createClient } from "@/lib/supabase/client";
-
+//NotificatationSettings export for use in profile settings 
 export default function NotificationSettings() {
   const supabase = createClient();
   const [enabled, setEnabled] = useState<boolean | null>(null);
@@ -15,13 +15,13 @@ export default function NotificationSettings() {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
-
+//if you are not logged inn (which in theory shouldn't happen)
       if (userError || !user) {
         console.warn("No logged-in user found for notification settings.");
         setEnabled(false);
         return;
       }
-
+//public.profiles table query 
       const { data, error } = await supabase
         .from("profiles")
         .select("email_notifications_enabled")
