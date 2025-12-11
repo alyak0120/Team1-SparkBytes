@@ -4,8 +4,8 @@ import { Form, Input, Select, Button, Card, Typography, DatePicker, TimePicker, 
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import dayjs from "dayjs";
 import { createClient } from "@supabase/supabase-js";
+import EventImageUpload from "@/components/EventImageUpload";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,6 +35,7 @@ const campusOptions = [
   { label: "East", value: "East" },
   { label: "Central", value: "Central" },
   { label: "Fenway", value: "Fenway" },
+  { label: "South", value: "South" },
 ];
 
 //main function for posting a new event
@@ -42,8 +43,17 @@ export default function NewEvent() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [msgApi, contextHolder] = message.useMessage();
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
- const handleFinish = async (values: any) => {
+  // -----------------------------
+  // 1. Upload image to Supabase Storage (if selected)
+  // -----------------------------
+  function handleUpload(url: string) {
+    console.log("Uploaded image URL:", url);
+    setImageUrl(url);
+  }
+
+  const handleFinish = async (values: any) => {
   setLoading(true);
 
   try {
@@ -73,30 +83,6 @@ export default function NewEvent() {
     }
 
     // -----------------------------
-    // 1. Upload image to Supabase Storage (if selected)
-    // -----------------------------
-    let image_url: string | null = null;
-    const file = values.image?.[0]?.originFileObj;
-    if (file) {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `events/${Date.now()}.${fileExt}`;
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("event-images")
-        .upload(fileName, file);
-
-    if (uploadError) {
-        console.log("Uploading to bucket: event_images", fileName);
-        console.error(uploadError);
-        console.error("Supabase storage error:", uploadError);
-        msgApi.error("Failed to upload image");
-    } else {
-        const publicData = supabase.storage.from("event-images").getPublicUrl(fileName);
-        image_url = publicData.data.publicUrl;
-    }
-    }
-
-    // -----------------------------
     // 2. Build payload for API
     // -----------------------------
     const payload = {
@@ -110,7 +96,7 @@ export default function NewEvent() {
       end_time: endDateTime.toISOString(),
       dietary_tags: values.dietary_tags || [],
       allergy_tags: values.allergy_tags || [],
-      image_url, // <-- link to Supabase image
+      image_url: imageUrl, // <-- link to Supabase image
     };
 
     console.log("Payload:", payload);
@@ -223,10 +209,8 @@ export default function NewEvent() {
           </Form.Item>
 
           {/* space for uploading event image, optional */}
-          <Form.Item label="Event Image (optional)" name="image" valuePropName="fileList" getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}>
-            <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Upload Image</Button>
-            </Upload>
+          <Form.Item label="Event Image (optional)">
+            <EventImageUpload onUpload={handleUpload} />
           </Form.Item>
 
           {/* logic for if form is cancelled (route to home page) or event is posted */}
