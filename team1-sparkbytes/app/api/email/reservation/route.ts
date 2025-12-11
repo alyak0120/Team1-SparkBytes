@@ -4,8 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 
 const apiKey = process.env.RESEND_API_KEY;
 
+// Warn if API key missing (email mock mode)
 if (!apiKey) {
-  console.warn("[EMAIL] RESEND_API_KEY is not set. Email sending will be mocked.");
+  console.warn("[EMAIL] RESEND_API_KEY is missing — email sending will be mocked.");
 }
 
 export async function POST(req: Request) {
@@ -13,41 +14,42 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { userId, eventTitle, eventTime, location } = body;
 
-    console.log("[EMAIL] Incoming reservation email request:", body);
+    console.log("[EMAIL] Incoming Request:", body);
 
     if (!userId || !eventTitle || !eventTime) {
       console.warn("[EMAIL] Missing required fields:", { userId, eventTitle, eventTime });
       return NextResponse.json(
-        { error: "Missing fields (userId, eventTitle, eventTime required)" },
+        { error: "Missing fields: userId, eventTitle, eventTime are required." },
         { status: 400 }
       );
     }
 
-    // Fetch user email from auth
+    // Initialize Supabase Admin client
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY! // must be present
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+    // Fetch user's email via admin API
+    console.log("[EMAIL] Fetching user from Supabase Admin:", userId);
 
-    if (userError || !user || !user.email) {
-      console.warn("[EMAIL] Could not fetch user email for userId:", userId);
-      // Mock mode if user email not found
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.admin.getUserById(userId);
+
+    if (userError || !user?.email) {
+      console.warn("[EMAIL] Could not fetch user or email:", userError);
       return NextResponse.json({ ok: true, mocked: true });
     }
 
     const email = user.email;
 
-    // Mock mode if missing API key
+    console.log("[EMAIL] User email retrieved:", email);
 
+    // Mock mode if missing Resend key
     if (!apiKey) {
-      console.log("[EMAIL MOCK] Would send reservation email:", {
-        email,
-        eventTitle,
-        eventTime,
-        location,
-      });
+      console.log("[EMAIL MOCK] Would send reservation email to:", email);
       return NextResponse.json({ ok: true, mocked: true });
     }
 
@@ -85,8 +87,10 @@ export async function POST(req: Request) {
       </div>
     `;
 
+    console.log("[EMAIL] Sending email…");
+
     const result = await resend.emails.send({
-      from: "SparkBytes <no-reply@sparkbytes.app>",
+      from: "SparkBytes <no-reply@resend.dev>", // FIXED — valid Resend domain
       to: email,
       subject: `Your SparkBytes Reservation 🍽️`,
       html,
@@ -96,9 +100,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Reservation email error:", err);
+    console.error("[EMAIL ERROR]", err);
     return NextResponse.json(
-      { error: "Failed to send reservation email" },
+      { error: "Failed to send reservation email." },
       { status: 500 }
     );
   }

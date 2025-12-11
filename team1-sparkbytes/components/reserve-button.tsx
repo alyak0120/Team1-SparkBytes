@@ -34,60 +34,46 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
 
     const isReserved = reserves.includes(event.id);
 
-    // ❌ UNRESERVE
-    if (isReserved) {
-      const { error } = await supabase
-        .from("reservation_list")
-        .delete()
-        .eq("event_id", event.id)
-        .eq("user_id", user.id);
+    // UNRESERVE
+if (isReserved) {
+  const { error } = await supabase
+    .from("reservation_list")
+    .delete()
+    .eq("event_id", event.id)
+    .eq("user_id", user.id);
 
-      if (!error) {
-        // decrement attendee count
-        await supabase.rpc("decrement_attendee", { eventid: event.id });
-        // increase capacity by 1
-        await supabase
-          .from("events")
-          .update({ capacity: event.capacity + 1 })
-          .eq("id", event.id);
-      }
-    }
+  if (!error) {
+    await supabase.rpc("decrement_attendee", { event_id_input: event.id });
+  }
+}
 
-    // ✅ RESERVE
-    else {
-      if (event.servings_left <= 0) return; // prevent over-reserving
+// RESERVE
+else {
+  if (event.servings_left <= 0) return;
 
-      const { error } = await supabase
-        .from("reservation_list")
-        .insert([
-          {
-            event_id: event.id,
-            event_title: event.title,
-            user_id: user.id,
-            user_email: user.email,
-          },
-        ]);
+  const { error } = await supabase
+    .from("reservation_list")
+    .insert([
+      {
+        event_id: event.id,
+        event_title: event.title,
+        user_id: user.id,
+        user_email: user.email,
+      },
+    ]);
 
-      if (error) {
-        console.error("[ReserveButton] Error inserting reservation:", error);
-        return;
-      }
+  if (error) {
+    console.error("[ReserveButton] Insert failed:", error);
+    return;
+  }
 
-      console.log("[ReserveButton] Reservation inserted successfully for event:", event.id);
+  // Update attendee count + servings_left
+  await supabase.rpc("increment_attendee", { event_id_input: event.id });
 
-      if (!error) {
-        // increment attendee count (servings_left auto recalculated)
-        await supabase.rpc("increment_attendee", { eventid: event.id });
-        // reduce capacity by 1
-        await supabase
-          .from("events")
-          .update({ capacity: event.capacity - 1 })
-          .eq("id", event.id);
-        sendReservationEmail(user);
-      }
-    }
+  await sendReservationEmail(user);
+}
 
-    reserve(event.id);
+reserve(event.id);
   }
 
   const isReserved = reserves.includes(event.id);
