@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 
 const apiKey = process.env.RESEND_API_KEY;
 
@@ -7,24 +8,39 @@ if (!apiKey) {
   console.warn("[EMAIL] RESEND_API_KEY is not set. Email sending will be mocked.");
 }
 
-const resend = new Resend(apiKey || ""); // still instantiate, but we log above
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, eventTitle, eventTime, location } = body;
+    const { userId, eventTitle, eventTime, location } = body;
 
     console.log("[EMAIL] Incoming reservation email request:", body);
 
-    if (!email || !eventTitle || !eventTime) {
-      console.warn("[EMAIL] Missing required fields:", { email, eventTitle, eventTime });
+    if (!userId || !eventTitle || !eventTime) {
+      console.warn("[EMAIL] Missing required fields:", { userId, eventTitle, eventTime });
       return NextResponse.json(
-        { error: "Missing fields (email, eventTitle, eventTime required)" },
+        { error: "Missing fields (userId, eventTitle, eventTime required)" },
         { status: 400 }
       );
     }
 
+    // Fetch user email from auth
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+
+    if (userError || !user || !user.email) {
+      console.warn("[EMAIL] Could not fetch user email for userId:", userId);
+      // Mock mode if user email not found
+      return NextResponse.json({ ok: true, mocked: true });
+    }
+
+    const email = user.email;
+
     // Mock mode if missing API key
+
     if (!apiKey) {
       console.log("[EMAIL MOCK] Would send reservation email:", {
         email,
@@ -34,6 +50,8 @@ export async function POST(req: Request) {
       });
       return NextResponse.json({ ok: true, mocked: true });
     }
+
+    const resend = new Resend(apiKey);
 
     const html = `
       <div style="font-family: Arial, sans-serif; background:#f8fafc; padding:24px;">

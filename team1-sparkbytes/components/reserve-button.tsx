@@ -17,7 +17,7 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: user.email,
+        userId: user.id,
         eventTitle: event.title,
         eventTime: event.time,
         location: event.location,
@@ -44,7 +44,12 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
 
       if (!error) {
         // decrement attendee count
-        await supabase.rpc("decrement_attendee", { event_id_input: event.id });
+        await supabase.rpc("decrement_attendee", { eventid: event.id });
+        // increase capacity by 1
+        await supabase
+          .from("events")
+          .update({ capacity: event.capacity + 1 })
+          .eq("id", event.id);
       }
     }
 
@@ -63,9 +68,21 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
           },
         ]);
 
+      if (error) {
+        console.error("[ReserveButton] Error inserting reservation:", error);
+        return;
+      }
+
+      console.log("[ReserveButton] Reservation inserted successfully for event:", event.id);
+
       if (!error) {
         // increment attendee count (servings_left auto recalculated)
-        await supabase.rpc("increment_attendee", { event_id_input: event.id });
+        await supabase.rpc("increment_attendee", { eventid: event.id });
+        // reduce capacity by 1
+        await supabase
+          .from("events")
+          .update({ capacity: event.capacity - 1 })
+          .eq("id", event.id);
         sendReservationEmail(user);
       }
     }
@@ -75,18 +92,19 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
 
   const isReserved = reserves.includes(event.id);
   const isFull = event.servings_left <= 0 && !isReserved;
+  const canInteract = !isFull;
 
   return (
     <Button
       type={!isFull && !isReserved ? "primary" : "default"}
-      disabled={isFull && !isReserved}
+      disabled={!canInteract}
       style={{
         backgroundColor: isReserved ? "#52c41a" : undefined,
         color: isReserved ? "#fff" : undefined,
-        cursor: isFull ? "not-allowed" : "pointer",
+        cursor: canInteract ? "pointer" : "not-allowed",
       }}
       icon={isReserved ? <CheckOutlined /> : null}
-      onClick={isFull ? undefined : handleReserve}
+      onClick={canInteract ? handleReserve : undefined}
     >
       {isFull ? "Event Full" : isReserved ? "Reserved" : "Reserve"}
     </Button>
