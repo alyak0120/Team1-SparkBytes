@@ -9,8 +9,9 @@ import {
   Image,
   Splitter,
   Input,
-  Switch,
-  Tag,
+  Modal,
+  Form,
+  Select,
 } from "antd";
 
 import { Content } from "antd/lib/layout/layout";
@@ -18,8 +19,12 @@ import Text from "antd/lib/typography/Text";
 import Title from "antd/lib/typography/Title";
 import Panel from "antd/lib/splitter/Panel";
 
+import EventList from "@/components/event-list";
+
 import profile_img from "../../public/images/profile_img.png";
 import { createClient } from "@/lib/supabase/client";
+
+const defaults = { Other: "/images/default.jpg" };
 
 const supabase = createClient();
 
@@ -31,8 +36,10 @@ const DashboardPage = () => {
   const [email, setEmail] = useState("");
   const [BUID, setBUID] = useState("");
   const [imageURL, setImageURL] = useState<string | null>(null);
+  const [updateURL, setUpdateURL] = useState("");
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [reservations, setReservations] = useState<any[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // ---------------------------
   // Get current user
@@ -106,6 +113,29 @@ const DashboardPage = () => {
     setReservations(reservedList);
   }
 
+  const showModal = () => {
+    setIsModalVisible(true);
+  }
+
+  const handleOk = async () => {
+    setIsModalVisible(false);
+    const { data, error } = await supabase
+    .from('profiles')
+    .update({ image_url: updateURL})
+    .eq('id', user.id);
+
+    if (error) {
+      console.error(error);
+    } else {
+      console.log('Successfully updated URL.');
+      console.log(data);
+    }
+  }
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  }
+
   // ---------------------------
   // Run on page load
   // ---------------------------
@@ -115,6 +145,13 @@ const DashboardPage = () => {
       await getCurrentProfile();
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      await getCurrentBookmarks();
+      await getCurrentReservations();
+    })();
+  }, [user]);
 
   return (
     <Flex gap="middle" wrap>
@@ -133,7 +170,7 @@ const DashboardPage = () => {
 
           <Divider style={{ background: "black", margin: 0 }} />
 
-          <Splitter>
+          <Splitter onResize={() => {return}}>
             {/* LEFT SIDEBAR PANEL */}
             <Panel
               resizable={false}
@@ -157,38 +194,27 @@ const DashboardPage = () => {
               </Title>
 
               <Text style={{ color: "black" }}>({email})</Text>
-
-              <br />
-              <Button
-                onClick={() =>
-                  notificationRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
+              
+              <br/>
+              <Button onClick={showModal}>Update Profile Image</Button>
+              <Modal
+                title="Update Profile"
+                open={isModalVisible}
+                okText={"Update Image"}
+                onOk={handleOk}
+                onCancel={handleCancel}
               >
-                Scroll to Notifications
-              </Button>
-
-              <br />
-              <Tag
-                style={{
-                  cursor: "pointer",
-                  marginTop: 10,
-                }}
-                onClick={getCurrentReservations}
-              >
-                (DEBUG) Check Reservations
-              </Tag>
-
-              <Tag
-                style={{
-                  cursor: "pointer",
-                  marginTop: 10,
-                }}
-                onClick={getCurrentBookmarks}
-              >
-                (DEBUG) Check Bookmarks
-              </Tag>
+                <Form layout="vertical" >
+                  <Form.Item
+                    label="Paste in a public image URL"
+                    name="details"
+                    rules={[{ required: true, message: "Please provide details." }]}
+                  >
+                    <Input.TextArea rows={4} placeholder="Tell us what happened..." name="URLInput" 
+                      onChange={(e) => {setUpdateURL(e.target.value); console.log(updateURL);}}/>
+                  </Form.Item>
+                </Form>
+              </Modal>
             </Panel>
 
             {/* RIGHT PANEL */}
@@ -224,7 +250,7 @@ const DashboardPage = () => {
                 {reservations.length > 0 ? (
                   reservations.map((r) => (
                     <div key={r.id}>
-                      <Text style={{ fontSize: 20 }}>{r.title}</Text>
+                      <Text style={{ fontSize: 20 }}>&quot;{r.title}&quot;</Text>
                       <br />
                     </div>
                   ))
@@ -243,7 +269,7 @@ const DashboardPage = () => {
                 {bookmarks.length > 0 ? (
                   bookmarks.map((b) => (
                     <div key={b.id}>
-                      <Text style={{ fontSize: 20 }}>{b.event_title}</Text>
+                      <Text style={{ fontSize: 20 }}>&quot;{b.event_title}&quot;</Text>
                       <br />
                     </div>
                   ))
