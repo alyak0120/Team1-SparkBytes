@@ -64,7 +64,10 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
       type={iconOnly ? "text" : "default"}
       danger={!iconOnly}
       icon={<FlagOutlined style={{ color: iconOnly ? "#CC0000" : undefined }} />}
-      onClick={() => setOpen(true)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen(true);
+      }}
     >
       {!iconOnly && "Report"}
     </Button>
@@ -122,7 +125,8 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
           type="primary"
           block
           style={{ marginTop: 16 }}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setSuccessOpen(false);
             router.push("/event"); // return to dashboard
           }}

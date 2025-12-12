@@ -15,13 +15,15 @@ export default function EventCard({
   event,
   reserves,
   reserve,
-  updateServingsLeft
+  updateServingsLeft,
+  onClick,
 }: any) {
 
   return (
     //singular card component for event //
     <Card
       hoverable
+      onClick={onClick}
       /* cover is img submitted by user or default */
       cover={
         <img

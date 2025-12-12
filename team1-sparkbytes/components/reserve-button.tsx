@@ -98,7 +98,12 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
         color: isReserved ? "#fff" : undefined,
       }}
       icon={isReserved ? <CheckOutlined /> : null}
-      onClick={!isFull || isReserved ? handleReserve : undefined}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!isFull || isReserved) {
+          handleReserve();
+        }
+      }}
     >
       {isFull ? "Event Full" : isReserved ? "Reserved" : "Reserve"}
     </Button>
