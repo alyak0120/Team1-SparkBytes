@@ -25,6 +25,8 @@ import SearchBar from "@/components/search-bar";
 import Filters from "@/components/filters";
 import EventList from "@/components/event-list";
 
+
+
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 
 // Default images for events without specific images //
@@ -61,6 +63,28 @@ export default function Home() {
   const [location, setLocation] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams(window.location.search);
+  const eventId = params.get("id");
+  if (!eventId) return;
+
+  // Wait for events to load
+  setTimeout(() => {
+    const el = document.getElementById(`event-${eventId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // highlight flash
+      el.style.transition = "background 0.6s";
+      el.style.background = "#ffe2d8";
+      setTimeout(() => (el.style.background = "white"), 600);
+    }
+  }, 500);
+}, [events]);
+
 
   // Fetch events + live updates
   useEffect(() => {

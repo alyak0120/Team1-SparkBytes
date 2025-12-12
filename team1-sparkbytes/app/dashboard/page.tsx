@@ -1,281 +1,476 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
 
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   Layout,
-  Flex,
   Divider,
   Image,
-  Splitter,
   Input,
   Switch,
-  Tag,
+  Card,
+  message,
 } from "antd";
 
-import { Content } from "antd/lib/layout/layout";
+import {
+  EditOutlined,
+  SaveOutlined,
+  BellFilled,
+  BellOutlined,
+} from "@ant-design/icons";
+
 import Text from "antd/lib/typography/Text";
 import Title from "antd/lib/typography/Title";
-import Panel from "antd/lib/splitter/Panel";
 
 import profile_img from "../../public/images/profile_img.png";
 import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
 
-const DashboardPage = () => {
+export default function DashboardPage() {
   const notificationRef = useRef<HTMLDivElement>(null);
 
   const [user, setUser] = useState<any>(null);
+  const [editing, setEditing] = useState(false);
+
+  // Profile fields
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [BUID, setBUID] = useState("");
+  const [buId, setBuId] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(false);
   const [imageURL, setImageURL] = useState<string | null>(null);
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
+
+  // Data sections
   const [reservations, setReservations] = useState<any[]>([]);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const [eventsPosted, setEventsPosted] = useState<any[]>([]);
 
-  // ---------------------------
-  // Get current user
-  // ---------------------------
-  async function getCurrentUser() {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) return null;
-    if (data?.user) setUser(data.user);
-    return data?.user || null;
-  }
+  // ============================================================
+  // Mini Event Card Renderer
+  // ============================================================
+  function MiniEventCard({ event }: any) {
+  if (!event) return null;
 
-  // ---------------------------
-  // Load user profile
-  // ---------------------------
-  async function getCurrentProfile() {
-    const user = await getCurrentUser();
-    if (!user) return;
+  const dateObj = event.start_time ? new Date(event.start_time) : null;
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id);
+  const dateStr = dateObj
+    ? dateObj.toLocaleDateString([], { month: "short", day: "numeric" })
+    : "Date TBD";
 
-    if (!error && data?.[0]) {
-      const profile = data[0];
-      setName(profile.name);
-      setEmail(profile.email);
-      setBUID(profile.bu_id);
-      if (profile.image_url) setImageURL(profile.image_url);
-    }
-  }
-
-  // ---------------------------
-  // Load bookmarks
-  // ---------------------------
-  async function getCurrentBookmarks() {
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("bookmarks")
-      .select("*")
-      .eq("user_id", user.id);
-
-    if (!error && data) setBookmarks(data);
-  }
-
-  // ---------------------------
-  // Load reservations
-  // ---------------------------
-  async function getCurrentReservations() {
-    if (!user) return;
-
-    let reservedList: any[] = [];
-
-    const { data, error } = await supabase
-      .from("reservations")
-      .select("*")
-      .eq("user_id", user.id);
-
-    if (error || !data) return;
-
-    for (let r of data) {
-      const { data: ev } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", r.event_id);
-
-      if (ev && ev[0]) reservedList.push(ev[0]);
-    }
-
-    setReservations(reservedList);
-  }
-
-  // ---------------------------
-  // Run on page load
-  // ---------------------------
-  useEffect(() => {
-    (async () => {
-      await getCurrentUser();
-      await getCurrentProfile();
-    })();
-  }, []);
+  const timeStr = dateObj
+    ? dateObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : "Time TBD";
 
   return (
-    <Flex gap="middle" wrap>
-      <Layout
+    <div
+      onClick={() => (window.location.href = `/event?id=${event.id}`)}
+      style={{
+        padding: "12px 14px",
+        border: "2px solid #FFB3A6",
+        borderRadius: 12,
+        marginBottom: 12,
+        cursor: "pointer",
+        background: "white",
+        transition: "0.2s",
+        display: "flex",
+        gap: 12,
+        alignItems: "center",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "#FFF1EC")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
+    >
+      {/* CUTE SPARKBYTES ICON */}
+      <div
         style={{
-          background: "#FFF8F5",
-          flexDirection: "initial",
-          height: "100vh",
+          width: 42,
+          height: 42,
+          borderRadius: "50%",
+          background: "#FF7043",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "white",
+          fontSize: 22,
         }}
       >
-        {/* MAIN CONTENT */}
-        <Content style={{ background: "#FFF8F5" }}>
-          <Title style={{ color: "black", margin: 0, padding: 8 }}>
-            Account Information
-          </Title>
+        🍽️
+      </div>
 
-          <Divider style={{ background: "black", margin: 0 }} />
+      {/* EVENT INFO */}
+      <div>
+        <strong style={{ fontSize: 16, color: "#CC0000" }}>
+          {event.title}
+        </strong>
 
-          <Splitter>
-            {/* LEFT SIDEBAR PANEL */}
-            <Panel
-              resizable={false}
-              style={{ textAlign: "center" }}
-              size={310}
-            >
+        <div style={{ fontSize: 13, color: "#333" }}>
+          📅 {dateStr} — ⏰ {timeStr}
+        </div>
+
+        <div style={{ fontSize: 13, color: "#555" }}>
+          📍 {event.location || "Location TBA"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+  // ============================================================
+  // Load User + Profile
+  // ============================================================
+  async function loadUser() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return;
+
+    setUser(data.user);
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profile) {
+      setName(profile.name || "");
+      setBuId(profile.bu_id || "");
+      setEmailNotifications(profile.email_notifications_enabled || false);
+      setImageURL(profile.image_url || null);
+    }
+  }
+
+  // ============================================================
+  // Upload Profile Image
+  // ============================================================
+  async function uploadProfileImage(e: any) {
+    if (!user) return;
+
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const filePath = `profiles/${user.id}-${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("event-images")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      message.error("Failed to upload image.");
+      return;
+    }
+
+    const { data: publicURL } = supabase.storage
+      .from("event-images")
+      .getPublicUrl(filePath);
+
+    if (publicURL?.publicUrl) {
+      setImageURL(publicURL.publicUrl);
+
+      await supabase
+        .from("profiles")
+        .update({ image_url: publicURL.publicUrl })
+        .eq("id", user.id);
+
+      message.success("Profile image updated!");
+    }
+  }
+
+  // ============================================================
+  // Save Profile
+  // ============================================================
+  async function saveChanges() {
+    if (!user) return;
+
+    await supabase
+      .from("profiles")
+      .update({
+        name,
+        bu_id: buId,
+        email_notifications_enabled: emailNotifications,
+      })
+      .eq("id", user.id);
+
+    message.success("Profile updated!");
+    setEditing(false);
+  }
+
+  // ============================================================
+  // Toggle Notifications
+  // ============================================================
+  async function toggleNotifications(enabled: boolean) {
+    setEmailNotifications(enabled);
+    if (!user) return;
+
+    await supabase
+      .from("profiles")
+      .update({ email_notifications_enabled: enabled })
+      .eq("id", user.id);
+
+    message.success(enabled ? "Notifications Enabled" : "Notifications Disabled");
+  }
+
+  // ============================================================
+  // Load Reservations (Full Event Objects)
+  // ============================================================
+  async function loadReservations() {
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from("reservation_list")
+    .select("events (*)")
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Failed to load reservations:", error);
+    return;
+  }
+
+  const events = data
+    .map((row) => row.events)
+    .filter(Boolean);
+
+  setReservations(events);
+}
+
+
+  // ============================================================
+  // Load Bookmarks (Full Event Objects)
+  // ============================================================
+  async function loadBookmarks() {
+    if (!user) return;
+
+    const { data: rows } = await supabase
+      .from("bookmarks")
+      .select("event_id")
+      .eq("user_id", user.id);
+
+    if (!rows || rows.length === 0) return setBookmarks([]);
+
+    const eventIds = rows.map((b) => b.event_id);
+
+    const { data: events } = await supabase
+      .from("events")
+      .select("*")
+      .in("id", eventIds);
+
+    setBookmarks(events || []);
+  }
+
+  // ============================================================
+  // Load Events User Posted
+  // ============================================================
+  async function loadEventsPosted() {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("events")
+      .select("*")
+      .eq("created_by", user.id);
+
+    setEventsPosted(data || []);
+  }
+
+  // ============================================================
+  // On Mount
+  // ============================================================
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadBookmarks();
+      loadReservations();
+      loadEventsPosted();
+    }
+  }, [user]);
+
+  // ============================================================
+  // Render Layout
+  // ============================================================
+  return (
+    <Layout style={{ minHeight: "100vh", background: "#FFF8F5" }}>
+      <div style={{ display: "flex", gap: 32, padding: "32px", width: "100%" }}>
+        {/* ------------------------ */}
+        {/* LEFT — PROFILE PANEL     */}
+        {/* ------------------------ */}
+        <Card
+          style={{
+            width: 380,
+            padding: 20,
+            borderRadius: 16,
+            borderColor: "#CC0000",
+            background: "white",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div style={{ position: "relative", display: "inline-block" }}>
               <Image
-                style={{
-                  padding: 10,
-                  border: "solid 1px #212121",
-                  borderRadius: 200,
-                }}
-                width={300}
-                height={300}
                 src={imageURL || profile_img.src}
-                alt="Profile"
+                width={160}
+                height={160}
+                style={{
+                  borderRadius: "50%",
+                  border: "3px solid #CC0000",
+                  objectFit: "cover",
+                }}
               />
 
-              <Title style={{ color: "black", margin: 0 }} level={2}>
-                {name}
-              </Title>
+              {editing && (
+                <label
+                  htmlFor="profileImageInput"
+                  style={{
+                    position: "absolute",
+                    bottom: 4,
+                    right: 4,
+                    background: "white",
+                    borderRadius: "50%",
+                    border: "2px solid #CC0000",
+                    width: 32,
+                    height: 32,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  <EditOutlined style={{ color: "#CC0000", fontSize: 16 }} />
+                </label>
+              )}
 
-              <Text style={{ color: "black" }}>({email})</Text>
+              <input
+                id="profileImageInput"
+                type="file"
+                accept="image/*"
+                onChange={uploadProfileImage}
+                style={{ display: "none" }}
+              />
+            </div>
 
-              <br />
+            <Title level={2} style={{ marginTop: 12 }}>
+              {name}
+            </Title>
+
+            <Text type="secondary">{user?.email}</Text>
+
+            <Divider />
+
+            {!editing ? (
               <Button
-                onClick={() =>
-                  notificationRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
+                style={{
+                  width: "100%",
+                  background: "#CC0000",
+                  color: "white",
+                  borderRadius: 10,
+                  height: 42,
+                  fontWeight: 600,
+                }}
+                icon={<EditOutlined />}
+                onClick={() => setEditing(true)}
               >
-                Scroll to Notifications
+                Edit Profile
               </Button>
-
-              <br />
-              <Tag
+            ) : (
+              <Button
                 style={{
-                  cursor: "pointer",
-                  marginTop: 10,
+                  width: "100%",
+                  background: "white",
+                  color: "#CC0000",
+                  border: "2px solid #CC0000",
+                  borderRadius: 10,
+                  height: 42,
+                  fontWeight: 600,
                 }}
-                onClick={getCurrentReservations}
+                icon={<SaveOutlined style={{ color: "#CC0000" }} />}
+                onClick={saveChanges}
               >
-                (DEBUG) Check Reservations
-              </Tag>
+                Save Changes
+              </Button>
+            )}
+          </div>
 
-              <Tag
-                style={{
-                  cursor: "pointer",
-                  marginTop: 10,
-                }}
-                onClick={getCurrentBookmarks}
-              >
-                (DEBUG) Check Bookmarks
-              </Tag>
-            </Panel>
+          {/* PROFILE FIELDS */}
+          <div style={{ marginTop: 20 }}>
+            <Text style={{ fontSize: 16, fontWeight: 600 }}>Full Name</Text>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!editing}
+              style={{
+                marginTop: 4,
+                width: "100%",
+                backgroundColor: editing ? "white" : "#f0f0f0",
+                color: editing ? "black" : "#888",
+                borderColor: editing ? "#CC0000" : "#d9d9d9",
+              }}
+            />
 
-            {/* RIGHT PANEL */}
-            <Panel resizable={false} style={{ background: "#FFF8F5" }}>
-              {/* PROFILE SECTION */}
-              <Title style={{ padding: 8 }} level={2}>
-                Profile
-              </Title>
-              <div style={{ paddingLeft: 10 }}>
-                <Text style={{ fontSize: 20 }}>Full Name:</Text>
-                <br />
-                <Input style={{ width: 200 }} value={name} readOnly />
-                <br />
+            <Text style={{ marginTop: 20, display: "block", fontSize: 16, fontWeight: 600 }}>
+              BU ID
+            </Text>
+            <Input
+              value={buId}
+              onChange={(e) => setBuId(e.target.value)}
+              disabled={!editing}
+              style={{
+                marginTop: 4,
+                width: "100%",
+                backgroundColor: editing ? "white" : "#f0f0f0",
+                color: editing ? "black" : "#888",
+                borderColor: editing ? "#CC0000" : "#d9d9d9",
+              }}
+            />
+          </div>
+        </Card>
 
-                <Text style={{ fontSize: 20 }}>Email:</Text>
-                <br />
-                <Input style={{ width: 200 }} value={email} readOnly />
-                <br />
+        {/* ------------------------ */}
+        {/* RIGHT — CONTENT PANELS   */}
+        {/* ------------------------ */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 24 }}>
+          
+          {/* NOTIFICATIONS */}
+          <Card title="Email Notifications" style={{ borderRadius: 16 }}>
+            <Text style={{ fontSize: 18 }}>Receive reservation confirmations:</Text>
+            <br />
+            <Switch
+              checked={emailNotifications}
+              onChange={toggleNotifications}
+              checkedChildren={<BellFilled style={{ color: "white" }} />}
+              unCheckedChildren={<BellOutlined style={{ color: "#CC0000" }} />}
+              style={{
+                backgroundColor: emailNotifications ? "#CC0000" : "#d9d9d9",
+                marginTop: 10,
+              }}
+            />
+          </Card>
 
-                <Text style={{ fontSize: 20 }}>BU ID:</Text>
-                <br />
-                <Input style={{ width: 200 }} value={BUID} readOnly />
-                <br />
-              </div>
+          {/* RESERVATIONS */}
+          <Card title="Your Reserved Events" style={{ borderRadius: 16 }}>
+  {reservations.length > 0 ? (
+    reservations.map((r) => <MiniEventCard key={r.id} event={r} />)
+  ) : (
+    <Text style={{ fontSize: 20 }}>None yet</Text>
+  )}
+</Card>
 
-              <Divider style={{ background: "black" }} />
 
-              {/* RESERVATIONS */}
-              <Title style={{ padding: 8 }} level={2}>
-                Reservations
-              </Title>
-              <div style={{ paddingLeft: 10 }}>
-                {reservations.length > 0 ? (
-                  reservations.map((r) => (
-                    <div key={r.id}>
-                      <Text style={{ fontSize: 20 }}>{r.title}</Text>
-                      <br />
-                    </div>
-                  ))
-                ) : (
-                  <Text style={{ fontSize: 20 }}>None yet</Text>
-                )}
-              </div>
+          {/* BOOKMARKS */}
+          <Card title="Your Bookmarked Events" style={{ borderRadius: 16 }}>
+            {bookmarks.length > 0 ? (
+              bookmarks.map((ev) => <MiniEventCard key={ev.id} event={ev} />)
+            ) : (
+              <Text style={{ fontSize: 20 }}>None</Text>
+            )}
+          </Card>
 
-              <Divider style={{ background: "black" }} />
-
-              {/* BOOKMARKS */}
-              <Title style={{ padding: 8 }} level={2}>
-                Bookmarks
-              </Title>
-              <div style={{ paddingLeft: 10 }}>
-                {bookmarks.length > 0 ? (
-                  bookmarks.map((b) => (
-                    <div key={b.id}>
-                      <Text style={{ fontSize: 20 }}>{b.event_title}</Text>
-                      <br />
-                    </div>
-                  ))
-                ) : (
-                  <Text style={{ fontSize: 20 }}>None</Text>
-                )}
-              </div>
-
-              <Divider style={{ background: "black" }} />
-
-              {/* NOTIFICATIONS */}
-              <Title
-                ref={notificationRef}
-                style={{ padding: 8 }}
-                level={2}
-              >
-                Notifications
-              </Title>
-
-              <div style={{ paddingLeft: 10, paddingBottom: 60 }}>
-                <Text style={{ fontSize: 20 }}>
-                  Email notifications:
-                </Text>
-                <br />
-                
-              </div>
-            </Panel>
-          </Splitter>
-        </Content>
-      </Layout>
-    </Flex>
+          {/* EVENTS POSTED */}
+          <Card title="Events You Posted" style={{ borderRadius: 16 }}>
+            {eventsPosted.length ? (
+              eventsPosted.map((ev) => <MiniEventCard key={ev.id} event={ev} />)
+            ) : (
+              <Text type="secondary">You have not posted any events yet.</Text>
+            )}
+          </Card>
+        </div>
+      </div>
+    </Layout>
   );
-};
-
-export default DashboardPage;
+}
