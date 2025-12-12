@@ -47,16 +47,12 @@ export async function POST(req: Request) {
     // -----------------------------
     // CREATE SUPABASE CLIENT (SERVICE ROLE)
     // -----------------------------
-const SUPABASE_URL = process.env.SUPABASE_URL!;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!SUPABASE_URL || !SERVICE_KEY) {
-  throw new Error("Supabase server env variables are missing!");
-}
-
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false }
-});
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: { persistSession: false }
+    });
 
     // -----------------------------
     // INSERT EVENT
