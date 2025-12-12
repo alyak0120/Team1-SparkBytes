@@ -75,7 +75,10 @@ export default function BookmarkButton({ eventId, eventTitle }: BookmarkButtonPr
             <BookOutlined />
           )
         }
-        onClick={toggleBookmark}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleBookmark();
+        }}
       />
     </Tooltip>
   );
