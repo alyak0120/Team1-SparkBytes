@@ -9,7 +9,7 @@ export default function EventList({
   filteredEvents,
   reserves,
   reserve,
-  updateServings,
+  updateServingsLeft,
   defaults
 }: any) {
 
@@ -34,7 +34,7 @@ export default function EventList({
                 event={event}
                 reserves={reserves}
                 reserve={reserve}
-                updateServings={updateServings}
+                updateServingsLeft={updateServingsLeft}
               />
             </Col>
           ))

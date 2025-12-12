@@ -34,63 +34,71 @@ export default function ReserveButton({ event, reserves, reserve }: any) {
 
     const isReserved = reserves.includes(event.id);
 
-    // UNRESERVE
-if (isReserved) {
-  const { error } = await supabase
-    .from("reservation_list")
-    .delete()
-    .eq("event_id", event.id)
-    .eq("user_id", user.id);
+    // ======================================================
+    // 🟥 UNRESERVE
+    // ======================================================
+    if (isReserved) {
+      const { error } = await supabase
+        .from("reservation_list")
+        .delete()
+        .eq("event_id", event.id)
+        .eq("user_id", user.id);
 
-  if (!error) {
-    await supabase.rpc("decrement_attendee", { event_id_input: event.id });
-  }
-}
+      if (error) {
+        console.error("Unreserve error:", error);
+        return;
+      }
 
-// RESERVE
-else {
-  if (event.servings_left <= 0) return;
+      // Update attendee count only (DB auto recomputes servings_left)
+      await supabase.rpc("decrement_attendee", {
+        event_id_input: event.id,
+      });
 
-  const { error } = await supabase
-    .from("reservation_list")
-    .insert([
-      {
-        event_id: event.id,
-        event_title: event.title,
-        user_id: user.id,
-        user_email: user.email,
-      },
-    ]);
+      reserve(event.id);
+      return;
+    }
 
-  if (error) {
-    console.error("[ReserveButton] Insert failed:", error);
-    return;
-  }
+    // ======================================================
+    // 🟩 RESERVE
+    // ======================================================
 
-  // Update attendee count + servings_left
-  await supabase.rpc("increment_attendee", { event_id_input: event.id });
+    if ((event.servings_left ?? 0) <= 0) return;
 
-  await sendReservationEmail(user);
-}
+    const { error } = await supabase.from("reservation_list").insert({
+      event_id: event.id,
+      event_title: event.title,
+      user_id: user.id,
+      user_email: user.email,
+    });
 
-reserve(event.id);
+    if (error) {
+      console.error("Reservation insert failed:", error);
+      return;
+    }
+
+    // Update attendee count — servings_left updates automatically
+    await supabase.rpc("increment_attendee", {
+      event_id_input: event.id,
+    });
+
+    await sendReservationEmail(user);
+
+    reserve(event.id);
   }
 
   const isReserved = reserves.includes(event.id);
-  const isFull = event.servings_left <= 0 && !isReserved;
-  const canInteract = !isFull;
+  const isFull = (event.servings_left ?? 0) <= 0 && !isReserved;
 
   return (
     <Button
       type={!isFull && !isReserved ? "primary" : "default"}
-      disabled={!canInteract}
+      disabled={isFull && !isReserved}
       style={{
         backgroundColor: isReserved ? "#52c41a" : undefined,
         color: isReserved ? "#fff" : undefined,
-        cursor: canInteract ? "pointer" : "not-allowed",
       }}
       icon={isReserved ? <CheckOutlined /> : null}
-      onClick={canInteract ? handleReserve : undefined}
+      onClick={!isFull || isReserved ? handleReserve : undefined}
     >
       {isFull ? "Event Full" : isReserved ? "Reserved" : "Reserve"}
     </Button>
