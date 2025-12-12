@@ -6,11 +6,6 @@ import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import type { UploadRequestOption } from "rc-upload/lib/interface";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
-
 export default function EventImageUpload({
   onUpload,
 }: {
@@ -23,6 +18,10 @@ export default function EventImageUpload({
   const customUpload = async (options: UploadRequestOption) => {
     const file = options.file as File; // force-cast → valid for image uploads
 
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     try {
       setUploading(true);
       setFileName(file.name);
