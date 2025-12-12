@@ -443,7 +443,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* RESERVATIONS */}
-          <Card title="Your Reservations" style={{ borderRadius: 16 }}>
+          <Card title="Your Reserved Events" style={{ borderRadius: 16 }}>
   {reservations.length > 0 ? (
     reservations.map((r) => <MiniEventCard key={r.id} event={r} />)
   ) : (
@@ -453,7 +453,7 @@ export default function DashboardPage() {
 
 
           {/* BOOKMARKS */}
-          <Card title="Your Bookmarks" style={{ borderRadius: 16 }}>
+          <Card title="Your Bookmarked Events" style={{ borderRadius: 16 }}>
             {bookmarks.length > 0 ? (
               bookmarks.map((ev) => <MiniEventCard key={ev.id} event={ev} />)
             ) : (
