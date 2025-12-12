@@ -8,6 +8,7 @@ import { LogoutButton } from "./logout-button";
 
 export function AuthButton() {
   const [user, setUser] = useState<any>(null);
+  const [firstName, setFirstName] = useState<string>("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -23,6 +24,30 @@ export function AuthButton() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+  useEffect(() => {
+    async function loadUser() {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) return;
+
+      setUser(userData.user);
+
+      // Fetch display name from profiles table
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", userData.user.id)
+        .single();
+
+      if (profile?.name) {
+        const first = profile.name.split(" ")[0]; // 👈 GET FIRST NAME ONLY
+        setFirstName(first);
+      }
+    }
+
+    loadUser();
+  }, []);
+
+  
 
   // -----------------------------
   // Not logged in
@@ -45,7 +70,7 @@ export function AuthButton() {
   // -----------------------------
   return (
     <div style={{color: "black"}} className="flex items-center gap-4">
-      Hey, {user.email}!
+      Hey, {firstName || user.email}!
       <LogoutButton />
     </div>
   );
