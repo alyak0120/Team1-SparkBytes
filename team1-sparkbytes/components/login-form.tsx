@@ -59,7 +59,7 @@ export default function LoginForm() {
     return;
   }
 
-  message.success("Welcome back to SparkBytes!");
+  
   setLoading(false);
 
   // Supabase automatically stores the session in cookies/localStorage

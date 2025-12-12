@@ -88,75 +88,57 @@ useEffect(() => {
 
   // Fetch events + live updates
   useEffect(() => {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    async function fetchEvents() {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("id", { ascending: false });
+  async function fetchEvents() {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("id", { ascending: false });
 
-      if (error) {
-        console.error("Supabase fetch error:", error);
-        return;
-      }
-
-            if (data) {
-        const mapped = data.map((e: any) => ({
-          id: e.id,
-          title: e.title,
-          description: e.description,
-          location: e.location,
-          campus: e.campus,
-          capacity: e.capacity,
-          attendee_count: e.attendee_count ?? 0,
-          servings_left:
-            e.servings_left ??
-            Math.max(0, e.capacity - (e.attendee_count ?? 0)), // fallback if null
-          start_time: e.start_time,
-          end_time: e.end_time,
-          dietary_tags: e.dietary_tags || [],
-          allergy_tags: e.allergy_tags || [],
-          image_url: e.image_url || defaults.Other,
-        }));
-
-        setEvents(mapped);
-      }
-
+    if (error) {
+      console.error("Supabase fetch error:", error);
+      return;
     }
 
-    fetchEvents();
+    if (data) {
+      const mapped = data.map((e: any) => ({
+        ...e,
+        attendee_count: e.attendee_count ?? 0,
+        servings_left: e.servings_left ?? e.capacity,
+        dietary_tags: e.dietary_tags || [],
+        allergy_tags: e.allergy_tags || [],
+        image_url: e.image_url || defaults.Other
+      }));
 
-    // Subscribe for realtime event updates
-    // Subscribe for realtime event updates
-// Subscribe for realtime event updates
-const subscription = supabase
-  .channel("public:events")
-  .on(
-    "postgres_changes",
-    { event: "*", schema: "public", table: "events" },
-    (payload: any) => {
-      const updatedEvent = payload.new as any;
-
-      setEvents((prev: any[]) =>
-        prev.map((ev: any) =>
-          ev.id === updatedEvent.id
-            ? {
-                ...ev,
-                ...updatedEvent, // includes servings_left, attendee_count, etc.
-              }
-            : ev
-        )
-      );
+      setEvents(mapped);
     }
-  )
-  .subscribe();
+  }
 
+  fetchEvents(); // ✔ async function called, but NOT returned!
 
+  const subscription = supabase
+    .channel("public:events")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "events" },
+      (payload: any) => {
+        const updatedEvent = payload.new as any;
+        setEvents((prev: any[]) =>
+          prev.map((ev: any) =>
+            ev.id === updatedEvent.id ? { ...ev, ...updatedEvent } : ev
+          )
+        );
+      }
+    )
+    .subscribe();
 
+  // ✔ cleanup must be synchronous
+  return () => {
+    supabase.removeChannel(subscription);
+  };
+}, []);
 
-    return () => supabase.removeChannel(subscription);
-  }, []);
 
 
   // Filters + sorting
