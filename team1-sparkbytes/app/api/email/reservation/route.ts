@@ -14,39 +14,40 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { userId, eventTitle, eventTime, location } = body;
 
+    console.log("[EMAIL] Incoming Request:", body);
+
     if (!userId || !eventTitle || !eventTime) {
+      console.warn("[EMAIL] Missing required fields:", { userId, eventTitle, eventTime });
       return NextResponse.json(
         { error: "Missing fields: userId, eventTitle, eventTime are required." },
         { status: 400 }
       );
     }
 
-    // -------------------------------
     // Initialize Supabase Admin client
-    // -------------------------------
-    const SUPABASE_URL = process.env.SUPABASE_URL!;
-    const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      throw new Error("Supabase server environment variables are missing!");
-    }
-
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY! // must be present
+    );
 
     // Fetch user's email via admin API
+    console.log("[EMAIL] Fetching user from Supabase Admin:", userId);
+
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.admin.getUserById(userId);
 
     if (userError || !user?.email) {
+      console.warn("[EMAIL] Could not fetch user or email:", userError);
       return NextResponse.json({ ok: true, mocked: true });
     }
 
     const email = user.email;
 
-    // -------------------------------
-    // Send email (or mock if no API key)
-    // -------------------------------
+    console.log("[EMAIL] User email retrieved:", email);
+
+    // Mock mode if missing Resend key
     if (!apiKey) {
       console.log("[EMAIL MOCK] Would send reservation email to:", email);
       return NextResponse.json({ ok: true, mocked: true });
@@ -86,12 +87,16 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    await resend.emails.send({
-      from: "SparkBytes <no-reply@resend.dev>",
+    console.log("[EMAIL] Sending email…");
+
+    const result = await resend.emails.send({
+      from: "SparkBytes <no-reply@resend.dev>", // FIXED — valid Resend domain
       to: email,
       subject: `Your SparkBytes Reservation 🍽️`,
       html,
     });
+
+    console.log("[EMAIL] Resend API response:", result);
 
     return NextResponse.json({ ok: true });
   } catch (err) {
