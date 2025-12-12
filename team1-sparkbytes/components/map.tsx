@@ -1,12 +1,10 @@
 "use client";
 
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import {LatLngExpression} from "leaflet";
-
 
 export default function Map() {
-  const center: LatLngExpression = [42.3505, -71.1054]; // BU campus center
+  const center: [number, number] = [42.3505, -71.1054];
 
   return (
     <div style={{ height: "70vh", width: "100%", marginTop: 20 }}>
@@ -14,12 +12,7 @@ export default function Map() {
         center={center as [number, number]}
         zoom={15}
         scrollWheelZoom={false}
-        style={{
-          height: "100%",
-          width: "100%",
-          borderRadius: 12,
-          overflow: "hidden",
-        }}
+        style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -28,3 +21,4 @@ export default function Map() {
     </div>
   );
 }
+
