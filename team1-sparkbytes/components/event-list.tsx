@@ -10,7 +10,8 @@ export default function EventList({
   reserves,
   reserve,
   updateServingsLeft,
-  defaults
+  defaults,
+  onEventClick
 }: any) {
 
   async function getCurrentUser() {
@@ -35,6 +36,7 @@ export default function EventList({
                 reserves={reserves}
                 reserve={reserve}
                 updateServingsLeft={updateServingsLeft}
+                onClick={() => onEventClick(event)}
               />
             </Col>
           ))
