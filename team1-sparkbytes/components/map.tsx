@@ -11,7 +11,7 @@ export default function Map() {
   return (
     <div style={{ height: "70vh", width: "100%", marginTop: 20 }}>
       <MapContainer
-        center={center}
+        center={center as [number, number]}
         zoom={15}
         scrollWheelZoom={false}
         style={{
