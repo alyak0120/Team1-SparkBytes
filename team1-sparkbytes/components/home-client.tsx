@@ -77,7 +77,7 @@ export default function Home() {
         return;
       }
 
-      if (data) {
+            if (data) {
         const mapped = data.map((e: any) => ({
           id: e.id,
           title: e.title,
@@ -86,16 +86,19 @@ export default function Home() {
           campus: e.campus,
           capacity: e.capacity,
           attendee_count: e.attendee_count ?? 0,
-          servings_left: e.servings_left, // ⭐ NEW — use DB-calculated column
+          servings_left:
+            e.servings_left ??
+            Math.max(0, e.capacity - (e.attendee_count ?? 0)), // fallback if null
           start_time: e.start_time,
           end_time: e.end_time,
           dietary_tags: e.dietary_tags || [],
           allergy_tags: e.allergy_tags || [],
-          image_url: e.image_url || defaults.Other
+          image_url: e.image_url || defaults.Other,
         }));
 
         setEvents(mapped);
       }
+
     }
 
     fetchEvents();
@@ -130,6 +133,7 @@ const subscription = supabase
 
     return () => supabase.removeChannel(subscription);
   }, []);
+
 
   // Filters + sorting
   const filteredEvents = events
@@ -194,6 +198,24 @@ const subscription = supabase
 
     fetchReservations();
   }, []);
+
+    // Locally adjust servings_left when reserving/unreserving
+  const updateServingsLeft = (eventId: number, delta: number) => {
+    setEvents(prev =>
+      prev.map(ev =>
+        ev.id === eventId
+          ? {
+              ...ev,
+              servings_left: Math.max(
+                0,
+                (ev.servings_left ?? Math.max(0, ev.capacity - (ev.attendee_count ?? 0))) + delta
+              ),
+            }
+          : ev
+      )
+    );
+  };
+
 
   return (
     <>
@@ -279,6 +301,7 @@ const subscription = supabase
               reserves={reserves}
               reserve={reserve}
               defaults={defaults}
+              updateServingsLeft={updateServingsLeft}   // ⭐ NEW
             />
           ) : layout === "list" ? (
             <p>No events found.</p>
