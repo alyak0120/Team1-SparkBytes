@@ -2,7 +2,6 @@
 
 import {Modal, Typography, Tag, Space} from "antd";
 import {EnvironmentOutlined, ClockCircleOutlined, UserOutlined} from "@ant-design/icons";
-import { on } from "events";
 
 export default function EventModal({event, open, onClose}: any) {
     if (!event) return null;
@@ -10,10 +9,17 @@ export default function EventModal({event, open, onClose}: any) {
     return (
         <Modal
             open={open}
-            onCancel={onClose}
+            onCancel={(e) => {
+                e.stopPropagation();
+                onClose();
+            }}
             footer={null}
             width={600}
             centered
+            maskClosable={true}
+            modalRender={(node) => (
+                <div onClick={(e) => e.stopPropagation()}>{node}</div>
+            )}
         >
             <img
                 src={event.image || event.image_url || "/default-event.jpg"}

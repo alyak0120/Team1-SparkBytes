@@ -81,7 +81,10 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
       <Modal
         title={`Report Event: ${eventTitle}`}
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={(e) => {
+          e.stopPropagation();
+          setOpen(false)}
+        }
         footer={null}
       >
         <Form layout="vertical" onFinish={submitReport}>
@@ -117,7 +120,10 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
         title="Report Submitted"
         open={successOpen}
         footer={null}
-        onCancel={() => setSuccessOpen(false)}
+        onCancel={(e) => {
+          e.stopPropagation();
+          setSuccessOpen(false)}
+        }
       >
         <p>Your report has been successfully submitted.</p>
 
