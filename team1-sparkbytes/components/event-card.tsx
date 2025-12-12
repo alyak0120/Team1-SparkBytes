@@ -15,6 +15,7 @@ export default function EventCard({
   event,
   reserves,
   reserve,
+  updateServingsLeft
 }: any) {
 
   return (
@@ -101,6 +102,7 @@ export default function EventCard({
             event={event}
             reserves={reserves}
             reserve={reserve}
+            updateServingsLeft={updateServingsLeft}
           />
         </div>
 

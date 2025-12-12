@@ -9,7 +9,7 @@ export default function EventList({
   filteredEvents,
   reserves,
   reserve,
-  updateServings,
+  updateServingsLeft,
   defaults
 }: any) {
 
@@ -30,15 +30,13 @@ export default function EventList({
         ) : (
           filteredEvents.map((event: any) => (
             <Col key={event.id} xs={24} sm={12} md={8} lg={6}>
-  <div id={`event-${event.id}`}>
-    <EventCard
-      event={event}
-      reserves={reserves}
-      reserve={reserve}
-    />
-  </div>
-</Col>
-
+              <EventCard
+                event={event}
+                reserves={reserves}
+                reserve={reserve}
+                updateServingsLeft={updateServingsLeft}
+              />
+            </Col>
           ))
         )}
       </Row>
