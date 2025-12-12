@@ -15,12 +15,14 @@ export default function EventCard({
   event,
   reserves,
   reserve,
+  onOpenModal
 }: any) {
 
   return (
     //singular card component for event //
     <Card
       hoverable
+      onClick={() => onOpenModal(event)}
       /* cover is img submitted by user or default */
       cover={
         <img

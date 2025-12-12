@@ -24,6 +24,7 @@ import dynamic from "next/dynamic";
 import SearchBar from "@/components/search-bar";
 import Filters from "@/components/filters";
 import EventList from "@/components/event-list";
+import EventModal from "@/components/event-modal";
 
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 
@@ -61,6 +62,13 @@ export default function Home() {
   const [location, setLocation] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const onOpenModal = (event: any) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
 
   // Fetch events + live updates
   useEffect(() => {
@@ -279,6 +287,7 @@ const subscription = supabase
               reserves={reserves}
               reserve={reserve}
               defaults={defaults}
+              onOpenModal={onOpenModal}
             />
           ) : layout === "list" ? (
             <p>No events found.</p>
@@ -339,6 +348,11 @@ const subscription = supabase
           />
         </Tooltip>
       </div>
+      <EventModal
+        event={selectedEvent}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
     </>
   );
 }

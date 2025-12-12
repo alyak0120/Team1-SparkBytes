@@ -10,7 +10,8 @@ export default function EventList({
   reserves,
   reserve,
   updateServings,
-  defaults
+  defaults,
+  onOpenModal
 }: any) {
 
   async function getCurrentUser() {
@@ -35,6 +36,7 @@ export default function EventList({
                 reserves={reserves}
                 reserve={reserve}
                 updateServings={updateServings}
+                onOpenModal={onOpenModal}
               />
             </Col>
           ))

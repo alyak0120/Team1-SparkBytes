@@ -90,7 +90,10 @@ reserve(event.id);
         cursor: canInteract ? "pointer" : "not-allowed",
       }}
       icon={isReserved ? <CheckOutlined /> : null}
-      onClick={canInteract ? handleReserve : undefined}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (canInteract) handleReserve();
+      }}
     >
       {isFull ? "Event Full" : isReserved ? "Reserved" : "Reserve"}
     </Button>

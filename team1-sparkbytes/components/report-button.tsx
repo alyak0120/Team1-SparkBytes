@@ -64,7 +64,10 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
       type={iconOnly ? "text" : "default"}
       danger={!iconOnly}
       icon={<FlagOutlined style={{ color: iconOnly ? "#CC0000" : undefined }} />}
-      onClick={() => setOpen(true)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen(true);
+      }}
     >
       {!iconOnly && "Report"}
     </Button>
@@ -73,7 +76,7 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
   return (
     <>
       <Tooltip title="Report">{button}</Tooltip>
-
+      <div onClick={(e) => e.stopPropagation()}>
       {/* FORM MODAL */}
       <Modal
         title={`Report Event: ${eventTitle}`}
@@ -130,6 +133,7 @@ export default function ReportButton({ eventId, eventTitle, iconOnly }: ReportBu
           Return to Dashboard
         </Button>
       </Modal>
+      </div>
     </>
   );
 }
