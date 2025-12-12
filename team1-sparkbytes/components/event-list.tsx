@@ -30,13 +30,15 @@ export default function EventList({
         ) : (
           filteredEvents.map((event: any) => (
             <Col key={event.id} xs={24} sm={12} md={8} lg={6}>
-              <EventCard
-                event={event}
-                reserves={reserves}
-                reserve={reserve}
-                updateServings={updateServings}
-              />
-            </Col>
+  <div id={`event-${event.id}`}>
+    <EventCard
+      event={event}
+      reserves={reserves}
+      reserve={reserve}
+    />
+  </div>
+</Col>
+
           ))
         )}
       </Row>
